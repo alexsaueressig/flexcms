@@ -1,0 +1,321 @@
+// This is your Prisma schema file.
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+/// All supported dynamic field types. Their display metadata and
+/// config validation schemas are stored in FieldTypeDefinition.
+enum FieldType {
+  STRING
+  RICH_TEXT
+  NUMBER
+  BOOLEAN
+  MEDIA_IMAGE
+  MEDIA_VIDEO
+  MEDIA_FILE
+  DATETIME
+  DATE_RANGE
+  SELECT_SINGLE
+  SELECT_MULTI
+  TAGS
+  RELATION_ONE
+  RELATION_MANY
+  GEO
+  JSON
+  COLOR
+}
+
+// ─── Locales (stored in DB — no hardcoded locale lists) ──────────────────────
+
+model Locale {
+  id        String   @id @default(cuid())
+  code      String   @unique // e.g. "en", "pt", "de"
+  name      String           // e.g. "English", "Português"
+  language  String           // BCP-47 tag, e.g. "en-US"
+  isDefault Boolean  @default(false)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  entries     Entry[]
+  fieldValues FieldValue[]
+}
+
+// ─── Site-wide settings (stored in DB) ───────────────────────────────────────
+
+model SiteSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique // e.g. "site_name", "allowed_email_domains"
+  value     String           // JSON-serialized value
+  label     String           // Human-readable label for admin UI
+  group     String   @default("general")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── Field type registry (all field-type schemas stored in DB) ───────────────
+
+/// One row per FieldType enum value. Stores the metadata and
+/// JSON Schema that governs what 'config' a BlueprintField can have.
+model FieldTypeDefinition {
+  id           String    @id @default(cuid())
+  type         FieldType @unique
+  label        String    // Display name, e.g. "Short text"
+  icon         String?   // Icon identifier for the UI
+  description  String?
+  /// JSON Schema (draft-07) describing the allowed BlueprintField.config shape
+  configSchema Json      @default("{}")
+  /// Whether this type is currently available for use in blueprints
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+// ─── Users ────────────────────────────────────────────────────────────────────
+
+model User {
+  id          String     @id @default(cuid())
+  email       String     @unique
+  name        String
+  status      UserStatus @default(ACTIVE)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  lastLoginAt DateTime?
+
+  otpTokens   OtpToken[]
+  sessions    Session[]
+  roles       UserRole[]
+  preferences UserPreference[]
+}
+
+// ─── Passwordless auth ────────────────────────────────────────────────────────
+
+model OtpToken {
+  id        String    @id @default(cuid())
+  userId    String
+  codeHash  String    // bcrypt hash of the 6-digit code
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  ipAddress String?
+  userAgent String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+// ─── Roles & RBAC ─────────────────────────────────────────────────────────────
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  /// Built-in system roles cannot be deleted
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       UserRole[]
+  permissions Permission[]
+}
+
+model UserRole {
+  userId String
+  roleId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+/// entryId = null → global permission; entryId set → scoped to that entry/branch
+model Permission {
+  id         String  @id @default(cuid())
+  roleId     String
+  entryId    String?
+  canView    Boolean @default(false)
+  canCreate  Boolean @default(false)
+  canEdit    Boolean @default(false)
+  canArchive Boolean @default(false)
+
+  role  Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  entry Entry? @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, entryId])
+  @@index([roleId])
+}
+
+// ─── Entries (recursive content tree) ─────────────────────────────────────────
+
+model Entry {
+  id         String    @id @default(cuid())
+  slug       String
+  title      String
+  parentId   String?
+  localeCode String
+  order      Int       @default(0)
+  isArchived Boolean   @default(false)
+  archivedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  createdBy  String?
+
+  parent   Entry?  @relation("EntryTree", fields: [parentId], references: [id])
+  children Entry[] @relation("EntryTree")
+  locale   Locale  @relation(fields: [localeCode], references: [code])
+
+  blueprint     Blueprint?
+  fieldValues   FieldValue[]
+  relationsFrom EntryRelation[] @relation("RelationSource")
+  relationsTo   EntryRelation[] @relation("RelationTarget")
+  permissions   Permission[]
+  mediaRecords  MediaRecord[]
+
+  @@unique([parentId, slug, localeCode])
+  @@index([parentId])
+  @@index([localeCode])
+  @@index([isArchived])
+}
+
+// ─── Blueprints (entry-scoped content schemas, stored in DB) ──────────────────
+
+/// One blueprint per entry. Defines the schema (field list) that all
+/// child entries of this entry must conform to.
+model Blueprint {
+  id          String   @id @default(cuid())
+  entryId     String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  entry  Entry            @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  fields BlueprintField[]
+}
+
+model BlueprintField {
+  id          String    @id @default(cuid())
+  blueprintId String
+  label       String
+  key         String    // machine-readable, unique within blueprint
+  type        FieldType
+  order       Int       @default(0)
+  isRequired  Boolean   @default(false)
+  isHidden    Boolean   @default(false)
+  /// Type-specific configuration (choices, min/max, relatedBlueprintId, etc.)
+  /// Must conform to the configSchema stored in FieldTypeDefinition for this type
+  config      Json      @default("{}")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  blueprint Blueprint    @relation(fields: [blueprintId], references: [id], onDelete: Cascade)
+  values    FieldValue[]
+
+  @@unique([blueprintId, key])
+  @@index([blueprintId])
+}
+
+// ─── Field values (EAV content store) ─────────────────────────────────────────
+
+model FieldValue {
+  id               String   @id @default(cuid())
+  entryId          String
+  blueprintFieldId String
+  localeCode       String
+  /// Only the column matching the field's FieldType is populated
+  valueText        String?  // STRING, RICH_TEXT, TAGS (JSON array), COLOR, SELECT_*
+  valueNumber      Float?   // NUMBER
+  valueBool        Boolean? // BOOLEAN
+  valueJson        Json?    // JSON, GEO {lat,lng,address}, DATETIME, DATE_RANGE, MEDIA_*
+  valueMedia       String?  // Firebase Storage path (images, video, file)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  entry          Entry          @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  blueprintField BlueprintField @relation(fields: [blueprintFieldId], references: [id], onDelete: Cascade)
+  locale         Locale         @relation(fields: [localeCode], references: [code])
+
+  @@unique([entryId, blueprintFieldId, localeCode])
+  @@index([entryId])
+  @@index([blueprintFieldId])
+}
+
+// ─── Entry relations (RELATION_ONE / RELATION_MANY fields) ────────────────────
+
+model EntryRelation {
+  id               String @id @default(cuid())
+  sourceEntryId    String
+  targetEntryId    String
+  blueprintFieldId String
+  order            Int    @default(0)
+
+  sourceEntry Entry @relation("RelationSource", fields: [sourceEntryId], references: [id], onDelete: Cascade)
+  targetEntry Entry @relation("RelationTarget", fields: [targetEntryId], references: [id], onDelete: Restrict)
+
+  @@unique([sourceEntryId, targetEntryId, blueprintFieldId])
+  @@index([sourceEntryId, blueprintFieldId])
+}
+
+// ─── Media records (tracks Firebase Storage uploads) ─────────────────────────
+
+model MediaRecord {
+  id           String   @id @default(cuid())
+  entryId      String?
+  storagePath  String   @unique // Firebase Storage object path
+  publicUrl    String
+  fileName     String
+  mimeType     String
+  sizeBytes    Int
+  width        Int?     // for images
+  height       Int?     // for images
+  uploadedBy   String?
+  createdAt    DateTime @default(now())
+
+  entry Entry? @relation(fields: [entryId], references: [id], onDelete: SetNull)
+
+  @@index([entryId])
+}
+
+// ─── User preferences (UI state persistence per user+entry) ───────────────────
+
+model UserPreference {
+  id      String  @id @default(cuid())
+  userId  String
+  /// null = global preference; set = scoped to a specific entry
+  entryId String?
+  key     String  // e.g. "pageSize", "sidebarCollapsed"
+  value   String  // JSON-serialized
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, entryId, key])
+  @@index([userId])
+}

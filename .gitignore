@@ -1,0 +1,31 @@
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
+
+# Node modules
+node_modules
+
+# Logs
+logs
+*.log
+
+# Env files – never commit real secrets
+.env
+.env.*
+!.env.example
+
+# Prisma generated client
+node_modules/.prisma
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea
+*.swp
+*.swo
