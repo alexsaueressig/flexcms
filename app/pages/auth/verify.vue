@@ -7,38 +7,20 @@
           We sent a 6-digit code to <strong>{{ email }}</strong>
         </p>
 
+        <p v-if="devOtp" class="verify-page__dev-otp">DEV — OTP: <strong>{{ devOtp }}</strong></p>
+
         <UForm :schema="schema" :state="state" @submit="submit">
           <UFormField label="Sign-in code" name="code">
-            <UInput
-              v-model="state.code"
-              placeholder="000000"
-              maxlength="6"
-              inputmode="numeric"
-              autocomplete="one-time-code"
-              autofocus
-              size="lg"
-              class="verify-page__input"
-            />
+            <UInput v-model="state.code" placeholder="000000" maxlength="6" inputmode="numeric"
+              autocomplete="one-time-code" autofocus size="lg" class="verify-page__input" />
           </UFormField>
 
-          <UButton
-            type="submit"
-            :loading="pending"
-            class="verify-page__btn"
-            size="lg"
-            block
-          >
+          <UButton type="submit" :loading="pending" class="verify-page__btn" size="lg" block>
             Verify code
           </UButton>
         </UForm>
 
-        <UButton
-          variant="ghost"
-          color="neutral"
-          size="sm"
-          class="verify-page__back"
-          @click="$router.back()"
-        >
+        <UButton variant="ghost" color="neutral" size="sm" class="verify-page__back" @click="$router.back()">
           ← Use a different email
         </UButton>
       </div>
@@ -54,6 +36,7 @@ definePageMeta({ layout: false })
 
 const route = useRoute()
 const email = computed(() => String(route.query.email ?? ''))
+const devOtp = computed(() => route.query.otp ? String(route.query.otp) : null)
 const auth = useAuthStore()
 const pending = ref(false)
 const toast = useToast()
@@ -99,9 +82,22 @@ async function submit() {
     margin: -0.5rem 0 0;
   }
 
-  &__input { width: 100%; letter-spacing: 0.25em; text-align: center; }
+  &__input {
+    width: 100%;
+    letter-spacing: 0.25em;
+    text-align: center;
+  }
 
-  &__btn { margin-top: 0.25rem; }
+  &__dev-otp {
+    text-align: center;
+    font-size: 0.875rem;
+    color: #f59e0b;
+    margin: 0;
+  }
+
+  &__btn {
+    margin-top: 0.25rem;
+  }
 
   &__back {
     width: 100%;

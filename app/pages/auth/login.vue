@@ -7,24 +7,11 @@
 
         <UForm :schema="schema" :state="state" @submit="submit">
           <UFormField label="Email address" name="email">
-            <UInput
-              v-model="state.email"
-              type="email"
-              placeholder="you@example.com"
-              autocomplete="email"
-              autofocus
-              size="lg"
-              class="login-page__input"
-            />
+            <UInput v-model="state.email" type="email" placeholder="you@example.com" autocomplete="email" autofocus
+              size="lg" class="login-page__input" />
           </UFormField>
 
-          <UButton
-            type="submit"
-            :loading="pending"
-            class="login-page__btn"
-            size="lg"
-            block
-          >
+          <UButton type="submit" :loading="pending" class="login-page__btn" size="lg" block>
             Send code
           </UButton>
         </UForm>
@@ -46,8 +33,8 @@ const toast = useToast()
 async function submit() {
   pending.value = true
   try {
-    await $fetch('/api/auth/send-otp', { method: 'POST', body: { email: state.email } })
-    await navigateTo({ path: '/auth/verify', query: { email: state.email } })
+    const res = await $fetch('/api/auth/send-otp', { method: 'POST', body: { email: state.email } })
+    await navigateTo({ path: '/auth/verify', query: { email: state.email, ...(res.devOtp ? { otp: res.devOtp } : {}) } })
   }
   catch (e: any) {
     toast.add({ title: 'Error', description: e.data?.message ?? 'Something went wrong', color: 'error' })
@@ -77,8 +64,12 @@ async function submit() {
     margin: -0.5rem 0 0;
   }
 
-  &__input { width: 100%; }
+  &__input {
+    width: 100%;
+  }
 
-  &__btn { margin-top: 0.25rem; }
+  &__btn {
+    margin-top: 0.25rem;
+  }
 }
 </style>
