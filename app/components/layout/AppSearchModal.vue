@@ -1,16 +1,12 @@
 <template>
-  <UModal :open="true" @close="uiStore.closeSearch()" :ui="{ width: 'max-w-xl' }">
-    <template #content>
+  <UModal :open="true" title="Search" description="Search entries by title or slug." @close="uiStore.closeSearch()"
+    :ui="{ width: 'max-w-xl' }">
+    <template #body>
       <div class="search-modal">
         <div class="search-modal__input-wrap">
           <UIcon name="i-lucide-search" class="search-modal__icon" />
-          <input
-            ref="inputRef"
-            v-model="query"
-            placeholder="Search entries…"
-            class="search-modal__input"
-            @keydown.escape="uiStore.closeSearch()"
-          />
+          <input ref="inputRef" v-model="query" placeholder="Search entries…" class="search-modal__input"
+            @keydown.escape="uiStore.closeSearch()" />
           <UKbd value="esc" />
         </div>
 
@@ -23,12 +19,7 @@
         </div>
 
         <ul v-else class="search-modal__results">
-          <li
-            v-for="entry in results"
-            :key="entry.id"
-            class="search-modal__result"
-            @click="go(entry)"
-          >
+          <li v-for="entry in results" :key="entry.id" class="search-modal__result" @click="go(entry)">
             <div class="search-modal__result-title">{{ entry.title }}</div>
             <div v-if="entry.parent" class="search-modal__result-parent">
               {{ entry.parent.title }} /
@@ -81,7 +72,10 @@ function go(entry: any) {
     border-bottom: 1px solid var(--ui-border);
   }
 
-  &__icon { opacity: 0.5; flex-shrink: 0; }
+  &__icon {
+    opacity: 0.5;
+    flex-shrink: 0;
+  }
 
   &__input {
     flex: 1;
@@ -92,7 +86,9 @@ function go(entry: any) {
     color: inherit;
     font-family: inherit;
 
-    &::placeholder { opacity: 0.4; }
+    &::placeholder {
+      opacity: 0.4;
+    }
   }
 
   &__state {
@@ -121,11 +117,19 @@ function go(entry: any) {
     cursor: pointer;
     transition: background 0.1s;
 
-    &:hover { background: var(--ui-bg-muted); }
+    &:hover {
+      background: var(--ui-bg-muted);
+    }
   }
 
-  &__result-title { font-size: 0.9375rem; font-weight: 500; }
+  &__result-title {
+    font-size: 0.9375rem;
+    font-weight: 500;
+  }
 
-  &__result-parent { font-size: 0.75rem; opacity: 0.5; }
+  &__result-parent {
+    font-size: 0.75rem;
+    opacity: 0.5;
+  }
 }
 </style>

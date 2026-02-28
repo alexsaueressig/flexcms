@@ -2,7 +2,13 @@
   <div class="entry-children">
     <div class="entry-children__header">
       <UInput v-model="search" icon="i-lucide-search" placeholder="Search children…" class="entry-children__search" />
-      <UButton icon="i-lucide-plus" size="sm" @click="showNew = true">New child</UButton>
+      <UModal v-model:open="showNew" title="New child entry"
+        description="Fill in the details to create a new child entry.">
+        <UButton icon="i-lucide-plus" size="sm">New child</UButton>
+        <template #body>
+          <EntryNewEntryForm :locale="locale" :parent-id="entryId" @created="onCreate" @cancel="showNew = false" />
+        </template>
+      </UModal>
     </div>
 
     <UTable :data="items" :columns="columns" :loading="pending">
@@ -18,11 +24,7 @@
 
     <UPagination v-model:page="page" :total="total" :items-per-page="limit" />
 
-    <UModal v-model:open="showNew" title="New child entry">
-      <template #body>
-        <NewEntryForm :locale="locale" :parent-id="entryId" @created="onCreate" @cancel="showNew = false" />
-      </template>
-    </UModal>
+
   </div>
 </template>
 
@@ -68,13 +70,18 @@ function onCreate() {
     justify-content: space-between;
   }
 
-  &__search { max-width: 280px; }
+  &__search {
+    max-width: 280px;
+  }
 
   &__link {
     color: inherit;
     text-decoration: none;
     font-weight: 500;
-    &:hover { text-decoration: underline; }
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }
 </style>

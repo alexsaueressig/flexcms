@@ -2,23 +2,19 @@
   <div class="entries-page">
     <div class="entries-page__header">
       <h1 class="entries-page__title">Entries</h1>
-      <UButton icon="i-lucide-plus" @click="showNew = true">New entry</UButton>
+      <UModal v-model:open="showNew" title="New entry" description="Fill in the details to create a new entry.">
+        <UButton icon="i-lucide-plus">New entry</UButton>
+        <template #body>
+          <EntryNewEntryForm :locale="locale" @created="onCreated" @cancel="showNew = false" />
+        </template>
+      </UModal>
     </div>
 
     <div class="entries-page__toolbar">
-      <UInput
-        v-model="search"
-        icon="i-lucide-search"
-        placeholder="Search entries…"
-        class="entries-page__search"
-      />
+      <UInput v-model="search" icon="i-lucide-search" placeholder="Search entries…" class="entries-page__search" />
     </div>
 
-    <UTable
-      :data="items"
-      :columns="columns"
-      :loading="pending"
-    >
+    <UTable :data="items" :columns="columns" :loading="pending">
       <template #title-cell="{ row }">
         <NuxtLink :to="`/${locale}/entries/${row.original.id}`" class="entries-page__link">
           {{ row.original.title }}
@@ -31,13 +27,7 @@
         {{ new Date(row.original.updatedAt).toLocaleDateString() }}
       </template>
       <template #actions-cell="{ row }">
-        <UButton
-          icon="i-lucide-archive"
-          size="xs"
-          variant="ghost"
-          color="neutral"
-          @click="archive(row.original.id)"
-        />
+        <UButton icon="i-lucide-archive" size="xs" variant="ghost" color="neutral" @click="archive(row.original.id)" />
       </template>
     </UTable>
 
@@ -45,13 +35,6 @@
       <span class="entries-page__total">{{ total }} entries</span>
       <UPagination v-model:page="page" :total="total" :items-per-page="limit" />
     </div>
-
-    <!-- New Entry Modal -->
-    <UModal v-model:open="showNew" title="New entry">
-      <template #body>
-        <NewEntryForm :locale="locale" @created="onCreated" @cancel="showNew = false" />
-      </template>
-    </UModal>
   </div>
 </template>
 
@@ -111,18 +94,29 @@ function onCreated() {
     justify-content: space-between;
   }
 
-  &__title { font-size: 1.5rem; font-weight: 700; margin: 0; }
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+  }
 
-  &__toolbar { display: flex; gap: 0.75rem; }
+  &__toolbar {
+    display: flex;
+    gap: 0.75rem;
+  }
 
-  &__search { max-width: 320px; }
+  &__search {
+    max-width: 320px;
+  }
 
   &__link {
     color: inherit;
     text-decoration: none;
     font-weight: 500;
 
-    &:hover { text-decoration: underline; }
+    &:hover {
+      text-decoration: underline;
+    }
   }
 
   &__pagination {
@@ -131,6 +125,9 @@ function onCreated() {
     justify-content: space-between;
   }
 
-  &__total { font-size: 0.875rem; opacity: 0.5; }
+  &__total {
+    font-size: 0.875rem;
+    opacity: 0.5;
+  }
 }
 </style>

@@ -1,13 +1,13 @@
 <template>
   <div class="app-shell">
-    <AppSidebar />
+    <LayoutAppSidebar />
     <div class="app-shell__main" :class="{ 'app-shell__main--collapsed': uiStore.sidebarCollapsed }">
-      <AppHeader />
+      <LayoutAppHeader />
       <main class="app-shell__content">
         <slot />
       </main>
     </div>
-    <AppSearchModal v-if="uiStore.globalSearchOpen" />
+    <LayoutAppSearchModal v-if="uiStore.globalSearchOpen" />
   </div>
 </template>
 

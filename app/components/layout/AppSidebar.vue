@@ -6,12 +6,8 @@
     </div>
 
     <nav class="sidebar__nav">
-      <UTooltip
-        v-for="item in navItems"
-        :key="item.to"
-        :text="uiStore.sidebarCollapsed ? item.label : ''"
-        placement="right"
-      >
+      <UTooltip v-for="item in navItems" :key="item.to" :text="uiStore.sidebarCollapsed ? item.label : ''"
+        placement="right">
         <NuxtLink :to="item.to" class="sidebar__nav-item" active-class="sidebar__nav-item--active">
           <UIcon :name="item.icon" class="sidebar__nav-icon" />
           <span v-if="!uiStore.sidebarCollapsed" class="sidebar__nav-label">{{ item.label }}</span>
@@ -22,19 +18,9 @@
     <div v-if="!uiStore.sidebarCollapsed" class="sidebar__tree">
       <div class="sidebar__tree-header">
         <span class="sidebar__tree-title">Content tree</span>
-        <UButton
-          icon="i-lucide-plus"
-          size="xs"
-          variant="ghost"
-          color="neutral"
-          @click="$emit('new-entry')"
-        />
+        <UButton icon="i-lucide-plus" size="xs" variant="ghost" color="neutral" @click="$emit('new-entry')" />
       </div>
-      <EntryTreeNode
-        v-for="entry in rootEntries"
-        :key="entry.id"
-        :entry="entry"
-      />
+      <LayoutEntryTreeNode v-for="entry in rootEntries" :key="entry.id" :entry="entry" />
       <div v-if="loadingRoots" class="sidebar__tree-loading">
         <UIcon name="i-lucide-loader-2" class="animate-spin" />
       </div>
@@ -100,7 +86,9 @@ onMounted(loadRoots)
   overflow: hidden;
   z-index: 40;
 
-  &--collapsed { width: 56px; }
+  &--collapsed {
+    width: 56px;
+  }
 
   &__logo {
     height: 56px;
@@ -111,8 +99,15 @@ onMounted(loadRoots)
     flex-shrink: 0;
   }
 
-  &__logo-text { font-weight: 700; font-size: 1rem; letter-spacing: -0.02em; }
-  &__logo-icon { font-size: 1.25rem; }
+  &__logo-text {
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: -0.02em;
+  }
+
+  &__logo-icon {
+    font-size: 1.25rem;
+  }
 
   &__nav {
     display: flex;
@@ -135,12 +130,27 @@ onMounted(loadRoots)
     opacity: 0.7;
     transition: opacity 0.1s, background 0.1s;
 
-    &:hover { opacity: 1; background: var(--ui-bg-muted); }
-    &--active { opacity: 1; background: var(--ui-bg-elevated); }
+    &:hover {
+      opacity: 1;
+      background: var(--ui-bg-muted);
+    }
+
+    &--active {
+      opacity: 1;
+      background: var(--ui-bg-elevated);
+    }
   }
 
-  &__nav-icon { font-size: 1rem; flex-shrink: 0; }
-  &__nav-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  &__nav-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  &__nav-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
   &__tree {
     flex: 1;
@@ -155,7 +165,13 @@ onMounted(loadRoots)
     padding: 0 0.25rem 0.5rem;
   }
 
-  &__tree-title { font-size: 0.75rem; font-weight: 600; opacity: 0.5; text-transform: uppercase; letter-spacing: 0.06em; }
+  &__tree-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    opacity: 0.5;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
 
   &__tree-loading {
     display: flex;

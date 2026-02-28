@@ -1,34 +1,21 @@
 <template>
   <div class="tree-node">
-    <NuxtLink
-      :to="`/${locale}/entries/${entry.id}`"
-      class="tree-node__row"
-      active-class="tree-node__row--active"
-    >
-      <UButton
-        v-if="entry._count && entry._count.children > 0"
-        :icon="isExpanded ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
-        variant="ghost"
-        color="neutral"
-        size="2xs"
-        class="tree-node__chevron"
-        @click.prevent="toggle"
-      />
+    <NuxtLink :to="`/${locale}/entries/${entry.id}`" class="tree-node__row" active-class="tree-node__row--active">
+      <UButton v-if="entry._count && entry._count.children > 0"
+        :icon="isExpanded ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'" variant="ghost" color="neutral"
+        size="2xs" class="tree-node__chevron" @click.prevent="toggle" />
       <span v-else class="tree-node__spacer" />
       <UIcon name="i-lucide-file-text" class="tree-node__icon" />
       <span class="tree-node__title">{{ entry.title }}</span>
-      <UBadge v-if="entry._count?.children" :label="String(entry._count.children)" size="xs" color="neutral" variant="subtle" />
+      <UBadge v-if="entry._count?.children" :label="String(entry._count.children)" size="xs" color="neutral"
+        variant="subtle" />
     </NuxtLink>
 
     <div v-if="isExpanded" class="entry-tree-indent">
       <div v-if="loading" class="tree-node__loading">
         <UIcon name="i-lucide-loader-2" class="animate-spin" />
       </div>
-      <EntryTreeNode
-        v-for="child in children"
-        :key="child.id"
-        :entry="child"
-      />
+      <LayoutEntryTreeNode v-for="child in children" :key="child.id" :entry="child" />
     </div>
   </div>
 </template>
@@ -83,15 +70,30 @@ async function toggle() {
     cursor: pointer;
     transition: background 0.1s;
 
-    &:hover { background: var(--ui-bg-muted); }
-    &--active { background: var(--ui-bg-elevated); font-weight: 500; }
+    &:hover {
+      background: var(--ui-bg-muted);
+    }
+
+    &--active {
+      background: var(--ui-bg-elevated);
+      font-weight: 500;
+    }
   }
 
-  &__chevron { flex-shrink: 0; }
+  &__chevron {
+    flex-shrink: 0;
+  }
 
-  &__spacer { width: 24px; flex-shrink: 0; }
+  &__spacer {
+    width: 24px;
+    flex-shrink: 0;
+  }
 
-  &__icon { font-size: 0.875rem; opacity: 0.5; flex-shrink: 0; }
+  &__icon {
+    font-size: 0.875rem;
+    opacity: 0.5;
+    flex-shrink: 0;
+  }
 
   &__title {
     flex: 1;

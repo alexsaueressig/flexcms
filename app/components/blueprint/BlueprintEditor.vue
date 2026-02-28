@@ -20,8 +20,10 @@
           <div class="blueprint-editor__field-body">
             <div class="blueprint-editor__field-row">
               <UInput v-model="field.label" placeholder="Label" class="blueprint-editor__label" @input="autoKey(i)" />
-              <UInput v-model="field.key" placeholder="key" :ui="{ base: 'font-mono text-sm' }" class="blueprint-editor__key" />
-              <USelect v-model="field.type" :options="typeOptions" value-key="value" label-key="label" class="blueprint-editor__type" />
+              <UInput v-model="field.key" placeholder="key" :ui="{ base: 'font-mono text-sm' }"
+                class="blueprint-editor__key" />
+              <USelect v-model="field.type" :options="typeOptions" value-key="value" label-key="label"
+                class="blueprint-editor__type" />
               <div class="blueprint-editor__flags">
                 <UTooltip text="Required">
                   <UCheckbox v-model="field.isRequired" />
@@ -31,7 +33,7 @@
             </div>
 
             <!-- Type-specific config -->
-            <FieldConfigurator v-if="needsConfig(field.type)" v-model="field.config" :type="field.type" />
+            <BlueprintFieldConfigurator v-if="needsConfig(field.type)" v-model="field.config" :type="field.type" />
           </div>
         </div>
       </template>
@@ -148,7 +150,11 @@ async function save() {
     border-radius: 0.75rem;
   }
 
-  &__list { display: flex; flex-direction: column; gap: 0.625rem; }
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
 
   &__field {
     display: flex;
@@ -165,10 +171,18 @@ async function save() {
     opacity: 0.35;
     margin-top: 0.5rem;
     flex-shrink: 0;
-    &:hover { opacity: 0.7; }
+
+    &:hover {
+      opacity: 0.7;
+    }
   }
 
-  &__field-body { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+  &__field-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
 
   &__field-row {
     display: flex;
@@ -177,9 +191,25 @@ async function save() {
     flex-wrap: wrap;
   }
 
-  &__label { flex: 2; min-width: 140px; }
-  &__key { flex: 1.5; min-width: 120px; }
-  &__type { flex: 1; min-width: 140px; }
-  &__flags { display: flex; align-items: center; gap: 0.25rem; }
+  &__label {
+    flex: 2;
+    min-width: 140px;
+  }
+
+  &__key {
+    flex: 1.5;
+    min-width: 120px;
+  }
+
+  &__type {
+    flex: 1;
+    min-width: 140px;
+  }
+
+  &__flags {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
 }
 </style>
