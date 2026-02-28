@@ -12,7 +12,7 @@ export default defineNuxtConfig({
         '@vueuse/nuxt',
     ],
 
-    css: ['~/assets/scss/main.scss'],
+    css: ['~/assets/css/main.css', '~/assets/scss/main.scss'],
 
     // ---------------------------------------------------------------------------
     // i18n – locale is handled via URL prefix /en/, /pt/, etc.
