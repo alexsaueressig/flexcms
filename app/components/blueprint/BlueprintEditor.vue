@@ -13,30 +13,28 @@
     </div>
 
     <VueDraggable v-else v-model="fields" handle=".blueprint-editor__handle" class="blueprint-editor__list">
-      <template #item="{ element: field, index: i }">
-        <div class="blueprint-editor__field">
-          <UIcon name="i-lucide-grip-vertical" class="blueprint-editor__handle" />
+      <div v-for="(field, i) in fields" :key="field.id ?? i" class="blueprint-editor__field">
+        <UIcon name="i-lucide-grip-vertical" class="blueprint-editor__handle" />
 
-          <div class="blueprint-editor__field-body">
-            <div class="blueprint-editor__field-row">
-              <UInput v-model="field.label" placeholder="Label" class="blueprint-editor__label" @input="autoKey(i)" />
-              <UInput v-model="field.key" placeholder="key" :ui="{ base: 'font-mono text-sm' }"
-                class="blueprint-editor__key" />
-              <USelect v-model="field.type" :options="typeOptions" value-key="value" label-key="label"
-                class="blueprint-editor__type" />
-              <div class="blueprint-editor__flags">
-                <UTooltip text="Required">
-                  <UCheckbox v-model="field.isRequired" />
-                </UTooltip>
-              </div>
-              <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error" @click="removeField(i)" />
+        <div class="blueprint-editor__field-body">
+          <div class="blueprint-editor__field-row">
+            <UInput v-model="field.label" placeholder="Label" class="blueprint-editor__label" @input="autoKey(i)" />
+            <UInput v-model="field.key" placeholder="key" :ui="{ base: 'font-mono text-sm' }"
+              class="blueprint-editor__key" />
+            <USelect v-model="field.type" :options="typeOptions" value-key="value" label-key="label"
+              class="blueprint-editor__type" />
+            <div class="blueprint-editor__flags">
+              <UTooltip text="Required">
+                <UCheckbox v-model="field.isRequired" />
+              </UTooltip>
             </div>
-
-            <!-- Type-specific config -->
-            <BlueprintFieldConfigurator v-if="needsConfig(field.type)" v-model="field.config" :type="field.type" />
+            <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error" @click="removeField(i)" />
           </div>
+
+          <!-- Type-specific config -->
+          <BlueprintFieldConfigurator v-if="needsConfig(field.type)" v-model="field.config" :type="field.type" />
         </div>
-      </template>
+      </div>
     </VueDraggable>
   </div>
 </template>

@@ -43,7 +43,8 @@
           <div v-if="item.value === 'fields'" class="entry-detail__panel">
             <div v-if="!blueprint" class="entry-detail__no-blueprint">
               <UIcon name="i-lucide-layout-template" />
-              <p>No blueprint defined. Go to the <strong>Blueprint</strong> tab to add fields.</p>
+              <p>No blueprint defined yet.</p>
+              <UButton icon="i-lucide-plus" size="sm" @click="activeTab = 'blueprint'">Add blueprint</UButton>
             </div>
             <EntryForm
               v-else
