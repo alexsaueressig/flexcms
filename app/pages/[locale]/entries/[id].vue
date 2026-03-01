@@ -46,13 +46,24 @@
               <p>No blueprint defined yet.</p>
               <UButton icon="i-lucide-plus" size="sm" @click="activeTab = 'blueprint'">Add blueprint</UButton>
             </div>
-            <EntryForm
-              v-else
-              :fields="blueprint.fields"
-              :values="fieldValues"
-              :locale="locale"
-              @update:values="fieldValues = $event"
-            />
+            <div v-else-if="!blueprint.fields?.length" class="entry-detail__no-blueprint">
+              <UIcon name="i-lucide-layout-template" />
+              <p>No fields defined yet.</p>
+              <UButton icon="i-lucide-plus" size="sm" @click="activeTab = 'blueprint'">Add fields</UButton>
+            </div>
+            <template v-else>
+              <div class="entry-detail__fields-toolbar">
+                <UButton icon="i-lucide-layout-template" variant="ghost" color="neutral" size="xs" @click="activeTab = 'blueprint'">
+                  Manage fields
+                </UButton>
+              </div>
+              <EntryForm
+                :fields="blueprint.fields"
+                :values="fieldValues"
+                :locale="locale"
+                @update:values="fieldValues = $event"
+              />
+            </template>
           </div>
 
           <!-- Children tab -->
@@ -180,6 +191,12 @@ async function magicPopulate() {
   &__tabs { margin-top: 0.5rem; }
 
   &__panel { padding-top: 1rem; }
+
+  &__fields-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.75rem;
+  }
 
   &__no-blueprint {
     display: flex;

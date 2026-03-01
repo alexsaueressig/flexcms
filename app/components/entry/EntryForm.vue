@@ -4,28 +4,25 @@
     <VueDraggable
       v-model="sortableFields"
       handle=".entry-form__drag-handle"
-      item-key="id"
       class="entry-form__fields"
     >
-      <template #item="{ element: field }">
-        <div class="entry-form__field-wrap">
-          <div class="entry-form__field-header">
-            <UIcon name="i-lucide-grip-vertical" class="entry-form__drag-handle" />
-            <span class="entry-form__field-label">
-              {{ field.label }}
-              <span v-if="field.isRequired" class="entry-form__required">*</span>
-            </span>
-            <UBadge :label="typeLabel(field.type)" size="xs" color="neutral" variant="subtle" />
-          </div>
-
-          <component
-            :is="fieldComponent(field.type)"
-            :field="field"
-            :model-value="getValue(field.id)"
-            @update:model-value="setValue(field.id, field.type, $event)"
-          />
+      <div v-for="field in sortableFields" :key="field.id" class="entry-form__field-wrap">
+        <div class="entry-form__field-header">
+          <UIcon name="i-lucide-grip-vertical" class="entry-form__drag-handle" />
+          <span class="entry-form__field-label">
+            {{ field.label }}
+            <span v-if="field.isRequired" class="entry-form__required">*</span>
+          </span>
+          <UBadge :label="typeLabel(field.type)" size="xs" color="neutral" variant="subtle" />
         </div>
-      </template>
+
+        <component
+          :is="fieldComponent(field.type)"
+          :field="field"
+          :model-value="getValue(field.id)"
+          @update:model-value="setValue(field.id, field.type, $event)"
+        />
+      </div>
     </VueDraggable>
   </div>
 </template>
