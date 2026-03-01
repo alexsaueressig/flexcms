@@ -14,23 +14,13 @@
       </template>
       <template #roles-cell="{ row }">
         <div class="users-page__roles">
-          <UBadge
-            v-for="r in row.original.roles"
-            :key="r.role.id"
-            :label="r.role.name"
-            color="neutral"
-            variant="subtle"
-            size="xs"
-          />
+          <UBadge v-for="r in row.original.roles" :key="r.role.id" :label="r.role.name" color="neutral" variant="subtle"
+            size="xs" />
         </div>
       </template>
       <template #status-cell="{ row }">
-        <UBadge
-          :label="row.original.status"
-          :color="row.original.status === 'ACTIVE' ? 'success' : 'neutral'"
-          variant="subtle"
-          size="xs"
-        />
+        <UBadge :label="row.original.status" :color="row.original.status === 'ACTIVE' ? 'success' : 'neutral'"
+          variant="subtle" size="xs" />
       </template>
       <template #actions-cell="{ row }">
         <UButton size="xs" variant="ghost" icon="i-lucide-edit" @click="editUser(row.original)" />
@@ -47,7 +37,7 @@
           <UFormField label="Email" name="email">
             <UInput v-model="inviteState.email" type="email" placeholder="jane@example.com" />
           </UFormField>
-          <USelectMenu v-model="inviteState.roleIds" :options="roleOptions" multiple placeholder="Assign roles" />
+          <USelectMenu v-model="inviteState.roleIds" :items="roleOptions" multiple placeholder="Assign roles" />
           <div class="users-page__modal-actions">
             <UButton type="submit" :loading="inviting">Invite</UButton>
             <UButton variant="ghost" type="button" @click="showNew = false">Cancel</UButton>
@@ -60,9 +50,12 @@
     <UModal v-model:open="editOpen" title="Edit user">
       <template #body>
         <UForm v-if="editTarget" :state="editTarget" @submit="saveEdit">
-          <UFormField label="Name"><UInput v-model="editTarget.name" /></UFormField>
+          <UFormField label="Name">
+            <UInput v-model="editTarget.name" />
+          </UFormField>
           <UFormField label="Status">
-            <USelect v-model="editTarget.status" :options="[{label:'Active',value:'ACTIVE'},{label:'Inactive',value:'INACTIVE'}]" />
+            <USelect v-model="editTarget.status"
+              :items="[{ label: 'Active', value: 'ACTIVE' }, { label: 'Inactive', value: 'INACTIVE' }]" />
           </UFormField>
           <div class="users-page__modal-actions">
             <UButton type="submit" :loading="editSaving">Save</UButton>
@@ -144,13 +137,33 @@ const columns = [
   flex-direction: column;
   gap: 1.25rem;
 
-  &__header { display: flex; align-items: center; justify-content: space-between; }
-  &__title { font-size: 1.5rem; font-weight: 700; margin: 0; }
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
 
-  &__name { font-weight: 500; font-size: 0.875rem; }
-  &__email { font-size: 0.75rem; opacity: 0.55; }
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+  }
 
-  &__roles { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+  &__name {
+    font-weight: 500;
+    font-size: 0.875rem;
+  }
+
+  &__email {
+    font-size: 0.75rem;
+    opacity: 0.55;
+  }
+
+  &__roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
 
   &__modal-actions {
     display: flex;

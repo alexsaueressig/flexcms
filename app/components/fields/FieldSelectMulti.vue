@@ -1,13 +1,6 @@
 <template>
-  <USelectMenu
-    :model-value="selected"
-    :options="options"
-    value-key="value"
-    label-key="label"
-    multiple
-    placeholder="Select options"
-    @update:model-value="onUpdate"
-  />
+  <USelectMenu :model-value="selected" :items="options" multiple placeholder="Select options"
+    @update:model-value="onUpdate" />
 </template>
 
 <script lang="ts" setup>

@@ -21,8 +21,7 @@
             <UInput v-model="field.label" placeholder="Label" class="blueprint-editor__label" @input="autoKey(i)" />
             <UInput v-model="field.key" placeholder="key" :ui="{ base: 'font-mono text-sm' }"
               class="blueprint-editor__key" />
-            <USelect v-model="field.type" :options="typeOptions" value-key="value" label-key="label"
-              class="blueprint-editor__type" />
+            <USelect v-model="field.type" :items="typeOptions" class="blueprint-editor__type" />
             <div class="blueprint-editor__flags">
               <UTooltip text="Required">
                 <UCheckbox v-model="field.isRequired" />

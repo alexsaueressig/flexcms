@@ -1,17 +1,8 @@
 <template>
   <div class="field-datetime">
-    <UInput
-      type="datetime-local"
-      :model-value="localDatetime"
-      @update:model-value="onUpdate"
-    />
-    <USelect
-      v-if="field.config.includeTime !== false"
-      :model-value="timezone"
-      :options="commonTimezones"
-      class="field-datetime__tz"
-      @update:model-value="timezone = $event; onUpdate(localDatetime)"
-    />
+    <UInput type="datetime-local" :model-value="localDatetime" @update:model-value="onUpdate" />
+    <USelect v-if="field.config.includeTime !== false" :model-value="timezone" :items="commonTimezones"
+      class="field-datetime__tz" @update:model-value="timezone = $event; onUpdate(localDatetime)" />
   </div>
 </template>
 
@@ -39,6 +30,13 @@ function onUpdate(val: string) {
 </script>
 
 <style lang="scss" scoped>
-.field-datetime { display: flex; gap: 0.5rem; align-items: center; }
-.field-datetime__tz { min-width: 200px; }
+.field-datetime {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.field-datetime__tz {
+  min-width: 200px;
+}
 </style>

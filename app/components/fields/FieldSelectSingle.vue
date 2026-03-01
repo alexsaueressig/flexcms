@@ -1,12 +1,6 @@
 <template>
-  <USelect
-    :model-value="modelValue as string ?? ''"
-    :options="options"
-    value-key="value"
-    label-key="label"
-    placeholder="Select an option"
-    @update:model-value="$emit('update:modelValue', $event)"
-  />
+  <USelect :model-value="modelValue as string ?? ''" :items="options" placeholder="Select an option"
+    @update:model-value="$emit('update:modelValue', $event)" />
 </template>
 
 <script lang="ts" setup>
