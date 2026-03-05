@@ -14,11 +14,21 @@
       </template>
       <template #actions-cell="{ row }">
         <div class="archive-page__actions">
-          <UButton size="xs" variant="outline" @click="restore(row.original.id)">Restore</UButton>
+          <UButton size="xs" variant="outline" @click="restoreTarget = row.original.id">Restore</UButton>
           <UButton size="xs" variant="ghost" color="error" @click="confirm(row.original.id)">Delete</UButton>
         </div>
       </template>
     </UTable>
+
+    <UModal v-model:open="restoreTarget" title="Restore entry">
+      <template #body>
+        <p>Are you sure you want to restore this entry? It will become visible in the content tree again.</p>
+      </template>
+      <template #footer>
+        <UButton color="primary" :loading="restoring" @click="doRestore">Restore</UButton>
+        <UButton variant="ghost" @click="restoreTarget = null">Cancel</UButton>
+      </template>
+    </UModal>
 
     <UModal v-model:open="deleteTarget" title="Delete permanently">
       <template #body>
@@ -33,12 +43,18 @@
 </template>
 
 <script lang="ts" setup>
+import { useEntriesStore } from '~/stores/entries'
+
 definePageMeta({ middleware: 'auth' })
 
 const route = useRoute()
 const locale = computed(() => String(route.params.locale))
 const deleteTarget = ref<string | null>(null)
+const restoreTarget = ref<string | null>(null)
+const restoring = ref(false)
 const toast = useToast()
+
+const entriesStore = useEntriesStore()
 
 const { data, pending, refresh } = await useFetch('/api/entries', {
   params: computed(() => ({ locale: locale.value, archived: true, limit: 100 })),
@@ -52,10 +68,18 @@ const columns = [
   { accessorKey: 'actions', header: '' },
 ]
 
-async function restore(id: string) {
-  await $fetch(`/api/entries/${id}/restore`, { method: 'PATCH' })
-  toast.add({ title: 'Entry restored', color: 'success' })
-  refresh()
+async function doRestore() {
+  if (!restoreTarget.value) return
+  restoring.value = true
+  try {
+    await $fetch(`/api/entries/${restoreTarget.value}/restore`, { method: 'PATCH' })
+    toast.add({ title: 'Entry restored', color: 'success' })
+    entriesStore.refreshTree()
+    refresh()
+    restoreTarget.value = null
+  } finally {
+    restoring.value = false
+  }
 }
 
 function confirm(id: string) {
@@ -75,8 +99,17 @@ async function doDelete() {
   flex-direction: column;
   gap: 1.25rem;
 
-  &__header { display: flex; align-items: center; justify-content: space-between; }
-  &__title { font-size: 1.5rem; font-weight: 700; margin: 0; }
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+  }
 
   &__slug {
     display: block;
@@ -85,6 +118,9 @@ async function doDelete() {
     font-family: var(--font-mono);
   }
 
-  &__actions { display: flex; gap: 0.375rem; }
+  &__actions {
+    display: flex;
+    gap: 0.375rem;
+  }
 }
 </style>
