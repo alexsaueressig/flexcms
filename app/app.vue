@@ -2,7 +2,7 @@
   <UApp>
     <NuxtRouteAnnouncer />
     <NuxtLayout>
-      <NuxtPage />
+      <NuxtPage :transition="{ name: 'slide', mode: 'out-in' }" />
     </NuxtLayout>
   </UApp>
 </template>

@@ -329,13 +329,18 @@ const defaultSettings = [
 async function main() {
     console.log('🌱 Seeding SnapCMS database…')
 
-    // 1. Default locale
+    // 1. Default locale (br) + secondary locale (en)
+    await prisma.locale.upsert({
+        where: { code: 'br' },
+        update: {},
+        create: { code: 'br', name: 'Português (Brasil)', language: 'pt-BR', isDefault: true, isActive: true },
+    })
     await prisma.locale.upsert({
         where: { code: 'en' },
         update: {},
-        create: { code: 'en', name: 'English', language: 'en-US', isDefault: true, isActive: true },
+        create: { code: 'en', name: 'English', language: 'en-US', isDefault: false, isActive: true },
     })
-    console.log('  ✓ Default locale (en) created')
+    console.log('  ✓ Default locale (br) + English (en) created')
 
     // 2. Field type definitions
     for (const def of fieldTypeDefs) {

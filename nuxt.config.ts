@@ -6,6 +6,7 @@ export default defineNuxtConfig({
 
     modules: [
         '@nuxt/ui',
+        '@nuxt/content',
         '@pinia/nuxt',
         '@nuxt/image',
         '@nuxtjs/i18n',
@@ -20,8 +21,9 @@ export default defineNuxtConfig({
     // ---------------------------------------------------------------------------
     i18n: {
         strategy: 'no_prefix',
-        defaultLocale: 'en',
+        defaultLocale: 'br',
         locales: [
+            { code: 'br', language: 'pt-BR', name: 'Português (BR)' },
             { code: 'en', language: 'en-US', name: 'English' },
         ],
         vueI18n: './i18n/i18n.config.ts',
@@ -59,6 +61,13 @@ export default defineNuxtConfig({
     // ---------------------------------------------------------------------------
     ui: {
         colorMode: true,
+    },
+
+    // ---------------------------------------------------------------------------
+    // View transitions (slide animation between pages)
+    // ---------------------------------------------------------------------------
+    experimental: {
+        viewTransition: true,
     },
 
     // ---------------------------------------------------------------------------

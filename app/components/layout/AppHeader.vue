@@ -1,23 +1,12 @@
 <template>
   <header class="app-header">
     <div class="app-header__left">
-      <UButton
-        icon="i-lucide-panel-left"
-        variant="ghost"
-        color="neutral"
-        size="sm"
-        @click="uiStore.toggleSidebar()"
-      />
+      <UButton icon="i-lucide-panel-left" variant="ghost" color="neutral" size="sm" @click="uiStore.toggleSidebar()" />
     </div>
 
     <div class="app-header__center">
-      <UButton
-        icon="i-lucide-search"
-        variant="outline"
-        color="neutral"
-        class="app-header__search-trigger"
-        @click="uiStore.openSearch()"
-      >
+      <UButton icon="i-lucide-search" variant="outline" color="neutral" class="app-header__search-trigger"
+        @click="uiStore.openSearch()">
         <span class="app-header__search-text">Search…</span>
         <UKbd value="⌘K" class="ml-auto" />
       </UButton>
@@ -78,9 +67,16 @@ onMounted(() => {
   flex-shrink: 0;
   background: var(--ui-bg);
 
-  &__left { display: flex; align-items: center; }
+  &__left {
+    display: flex;
+    align-items: center;
+  }
 
-  &__center { flex: 1; max-width: 480px; margin: 0 auto; }
+  &__center {
+    flex: 1;
+    max-width: 480px;
+    margin: 0 auto;
+  }
 
   &__search-trigger {
     width: 100%;
@@ -90,7 +86,10 @@ onMounted(() => {
     opacity: 0.6;
   }
 
-  &__search-text { flex: 1; text-align: left; }
+  &__search-text {
+    flex: 1;
+    text-align: left;
+  }
 
   &__right {
     display: flex;

@@ -12,28 +12,9 @@
       <p>No fields yet. Add one to define the content schema.</p>
     </div>
 
-    <VueDraggable v-else v-model="fields" handle=".blueprint-editor__handle" class="blueprint-editor__list">
-      <div v-for="(field, i) in fields" :key="field.id ?? i" class="blueprint-editor__field">
-        <UIcon name="i-lucide-grip-vertical" class="blueprint-editor__handle" />
-
-        <div class="blueprint-editor__field-body">
-          <div class="blueprint-editor__field-row">
-            <UInput v-model="field.label" placeholder="Label" class="blueprint-editor__label" @input="autoKey(i)" />
-            <UInput v-model="field.key" placeholder="key" :ui="{ base: 'font-mono text-sm' }"
-              class="blueprint-editor__key" />
-            <USelect v-model="field.type" :items="typeOptions" class="blueprint-editor__type" />
-            <div class="blueprint-editor__flags">
-              <UTooltip text="Required">
-                <UCheckbox v-model="field.isRequired" />
-              </UTooltip>
-            </div>
-            <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error" @click="removeField(i)" />
-          </div>
-
-          <!-- Type-specific config -->
-          <BlueprintFieldConfigurator v-if="needsConfig(field.type)" v-model="field.config" :type="field.type" />
-        </div>
-      </div>
+    <VueDraggable v-else v-model="fields" handle=".blueprint-field-row__handle" class="blueprint-editor__list">
+      <BlueprintFieldRow v-for="(field, i) in fields" :key="field.id ?? i" :field="field" :type-options="typeOptions"
+        @update:field="fields[i] = $event" @remove="fields.splice(i, 1)" />
     </VueDraggable>
   </div>
 </template>
@@ -91,27 +72,12 @@ function addField() {
   })
 }
 
-function removeField(i: number) { fields.value.splice(i, 1) }
-
-function autoKey(i: number) {
-  const f = fields.value[i]
-  if (f && !f.id) { // Only auto-fill key for new fields
-    f.key = f.label.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/(^_|_$)/g, '')
-  }
-}
-
-function needsConfig(type: string): boolean {
-  return ['SELECT_SINGLE', 'SELECT_MULTI', 'RELATION_ONE', 'RELATION_MANY', 'NUMBER', 'STRING'].includes(type)
-}
-
 async function save() {
   saving.value = true
   try {
     await $fetch(`/api/blueprints/${props.entryId}`, {
       method: 'PUT',
-      body: {
-        fields: fields.value.map((f, i) => ({ ...f, order: i })),
-      },
+      body: { fields: fields.value.map((f, i) => ({ ...f, order: i })) },
     })
     toast.add({ title: 'Blueprint saved', color: 'success' })
     emit('saved')
@@ -151,62 +117,6 @@ async function save() {
     display: flex;
     flex-direction: column;
     gap: 0.625rem;
-  }
-
-  &__field {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-    border: 1px solid var(--ui-border);
-    border-radius: 0.75rem;
-    padding: 0.875rem;
-    background: var(--ui-bg);
-  }
-
-  &__handle {
-    cursor: grab;
-    opacity: 0.35;
-    margin-top: 0.5rem;
-    flex-shrink: 0;
-
-    &:hover {
-      opacity: 0.7;
-    }
-  }
-
-  &__field-body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  &__field-row {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-  }
-
-  &__label {
-    flex: 2;
-    min-width: 140px;
-  }
-
-  &__key {
-    flex: 1.5;
-    min-width: 120px;
-  }
-
-  &__type {
-    flex: 1;
-    min-width: 140px;
-  }
-
-  &__flags {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
   }
 }
 </style>

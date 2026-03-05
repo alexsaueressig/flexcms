@@ -44,15 +44,8 @@
     </UModal>
 
     <!-- Delete confirmation modal -->
-    <UModal v-model:open="showDelete" title="Delete entry" description="Are you sure? This action cannot be undone.">
-      <template #body>
-        <p>Delete <strong>{{ deletingEntry?.title }}</strong>?</p>
-        <div class="entry-children__delete-actions">
-          <UButton color="error" :loading="deleting" @click="doDelete">Delete</UButton>
-          <UButton variant="ghost" @click="showDelete = false">Cancel</UButton>
-        </div>
-      </template>
-    </UModal>
+    <EntryEntryDeleteConfirm v-model:open="showDelete" :title="deletingEntry?.title" :loading="deleting"
+      @confirm="doDelete" />
   </div>
 </template>
 
@@ -162,13 +155,6 @@ async function doDelete() {
     align-items: center;
     gap: 0.25rem;
     justify-content: flex-end;
-  }
-
-  &__delete-actions {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: flex-end;
-    margin-top: 1rem;
   }
 }
 </style>

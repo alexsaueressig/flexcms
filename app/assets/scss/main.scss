@@ -1,15 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
 
 :root {
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -23,19 +26,36 @@ html, body {
     padding: 0.75rem 1rem;
     line-height: 1.75;
 
-    > * + * { margin-top: 0.75em; }
+    > * + * {
+      margin-top: 0.75em;
+    }
 
-    h1 { font-size: 1.5rem; font-weight: 700; }
-    h2 { font-size: 1.25rem; font-weight: 600; }
-    h3 { font-size: 1.1rem; font-weight: 600; }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
 
-    ul { list-style: disc; padding-left: 1.5rem; }
-    ol { list-style: decimal; padding-left: 1.5rem; }
+    ul {
+      list-style: disc;
+      padding-left: 1.5rem;
+    }
+    ol {
+      list-style: decimal;
+      padding-left: 1.5rem;
+    }
 
     code {
       font-family: var(--font-mono);
       font-size: 0.875em;
-      background: rgba(100,100,100,0.1);
+      background: rgba(100, 100, 100, 0.1);
       border-radius: 0.25rem;
       padding: 0.1em 0.3em;
     }
@@ -56,7 +76,9 @@ html, body {
       opacity: 0.75;
     }
 
-    a { text-decoration: underline; }
+    a {
+      text-decoration: underline;
+    }
 
     p.is-editor-empty:first-child::before {
       content: attr(data-placeholder);
@@ -80,6 +102,24 @@ html, body {
 // ── Entry tree ────────────────────────────────────────────────────────────────
 .entry-tree-indent {
   padding-left: 1.25rem;
-  border-left: 1px solid rgba(100,100,100,0.15);
+  border-left: 1px solid rgba(100, 100, 100, 0.15);
   margin-left: 0.625rem;
+}
+
+// ── Page slide transitions ────────────────────────────────────────────────────
+.slide-enter-active,
+.slide-leave-active {
+  transition:
+    transform 0.22s ease,
+    opacity 0.22s ease;
+}
+
+.slide-enter-from {
+  transform: translateX(16px);
+  opacity: 0;
+}
+
+.slide-leave-to {
+  transform: translateX(-16px);
+  opacity: 0;
 }

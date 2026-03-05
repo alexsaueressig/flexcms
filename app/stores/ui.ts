@@ -4,7 +4,7 @@ export const useUiStore = defineStore('ui', () => {
   const sidebarCollapsed = ref(false)
   const globalSearchOpen = ref(false)
   const globalSearchQuery = ref('')
-  const activeLocale = ref('en')
+  const activeLocale = ref('br')
 
   function toggleSidebar() { sidebarCollapsed.value = !sidebarCollapsed.value }
   function openSearch() { globalSearchOpen.value = true }
