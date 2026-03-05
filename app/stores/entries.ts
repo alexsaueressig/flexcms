@@ -45,5 +45,11 @@ export const useEntriesStore = defineStore('entries', () => {
     loadedChildren.value.delete(id)
   }
 
-  return { cache, loadedChildren, expanded, setEntry, getEntry, toggleExpand, isExpanded, invalidate }
+  // Increment to signal the sidebar tree should reload
+  const treeVersion = ref(0)
+  function refreshTree() {
+    treeVersion.value++
+  }
+
+  return { cache, loadedChildren, expanded, treeVersion, setEntry, getEntry, toggleExpand, isExpanded, invalidate, refreshTree }
 })

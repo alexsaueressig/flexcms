@@ -31,11 +31,13 @@
 <script lang="ts" setup>
 import { useUiStore } from '~/stores/ui'
 import { useAuthStore } from '~/stores/auth'
+import { useEntriesStore } from '~/stores/entries'
 
 defineEmits<{ 'new-entry': [] }>()
 
 const uiStore = useUiStore()
 const auth = useAuthStore()
+const entriesStore = useEntriesStore()
 const locale = computed(() => uiStore.activeLocale)
 
 const navItems = computed(() => {
@@ -67,6 +69,7 @@ async function loadRoots() {
 }
 
 onMounted(loadRoots)
+watch(() => entriesStore.treeVersion, loadRoots)
 </script>
 
 <style lang="scss" scoped>

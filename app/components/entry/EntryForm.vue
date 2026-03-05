@@ -1,14 +1,8 @@
-
 <template>
   <div class="entry-form">
-    <VueDraggable
-      v-model="sortableFields"
-      handle=".entry-form__drag-handle"
-      class="entry-form__fields"
-    >
-      <div v-for="field in sortableFields" :key="field.id" class="entry-form__field-wrap">
+    <div class="entry-form__fields">
+      <div v-for="field in visibleFields" :key="field.id" class="entry-form__field-wrap">
         <div class="entry-form__field-header">
-          <UIcon name="i-lucide-grip-vertical" class="entry-form__drag-handle" />
           <span class="entry-form__field-label">
             {{ field.label }}
             <span v-if="field.isRequired" class="entry-form__required">*</span>
@@ -16,19 +10,14 @@
           <UBadge :label="typeLabel(field.type)" size="xs" color="neutral" variant="subtle" />
         </div>
 
-        <component
-          :is="fieldComponent(field.type)"
-          :field="field"
-          :model-value="getValue(field.id)"
-          @update:model-value="setValue(field.id, field.type, $event)"
-        />
+        <component :is="fieldComponent(field.type)" :field="field" :model-value="getValue(field.id)"
+          @update:model-value="setValue(field.id, field.type, $event)" />
       </div>
-    </VueDraggable>
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { VueDraggable } from 'vue-draggable-plus'
 import FieldString from '~/components/fields/FieldString.vue'
 import FieldRichText from '~/components/fields/FieldRichText.vue'
 import FieldNumber from '~/components/fields/FieldNumber.vue'
@@ -73,9 +62,7 @@ const emit = defineEmits<{
   'update:values': [values: FieldValue[]]
 }>()
 
-// Allow drag-reorder of visible fields (does not persist field order — that's the blueprint editor's job)
-const sortableFields = ref<FieldDef[]>([...props.fields.filter(f => !f.isHidden)])
-watch(() => props.fields, (f) => { sortableFields.value = f.filter(x => !x.isHidden) })
+const visibleFields = computed(() => props.fields.filter(f => !f.isHidden))
 
 const localValues = ref<FieldValue[]>([...props.values])
 watch(() => props.values, (v) => { localValues.value = [...v] })
@@ -141,7 +128,11 @@ function typeLabel(type: string): string { return typeLabelMap[type] ?? type }
 
 <style lang="scss" scoped>
 .entry-form {
-  &__fields { display: flex; flex-direction: column; gap: 1.25rem; }
+  &__fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
 
   &__field-wrap {
     border: 1px solid var(--ui-border);
@@ -150,7 +141,9 @@ function typeLabel(type: string): string { return typeLabelMap[type] ?? type }
     background: var(--ui-bg);
     transition: border-color 0.15s;
 
-    &:hover { border-color: var(--ui-border-accented); }
+    &:hover {
+      border-color: var(--ui-border-accented);
+    }
   }
 
   &__field-header {
@@ -164,8 +157,14 @@ function typeLabel(type: string): string { return typeLabelMap[type] ?? type }
     cursor: grab;
     opacity: 0.35;
     flex-shrink: 0;
-    &:hover { opacity: 0.7; }
-    &:active { cursor: grabbing; }
+
+    &:hover {
+      opacity: 0.7;
+    }
+
+    &:active {
+      cursor: grabbing;
+    }
   }
 
   &__field-label {
@@ -174,6 +173,9 @@ function typeLabel(type: string): string { return typeLabelMap[type] ?? type }
     flex: 1;
   }
 
-  &__required { color: var(--ui-color-error-500); margin-left: 2px; }
+  &__required {
+    color: var(--ui-color-error-500);
+    margin-left: 2px;
+  }
 }
 </style>

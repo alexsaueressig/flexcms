@@ -20,63 +20,24 @@
         </div>
 
         <div class="entry-detail__actions">
-          <UButton
-            v-if="blueprint?.fields.length"
-            icon="i-lucide-wand-2"
-            variant="outline"
-            color="neutral"
-            size="sm"
-            :loading="magicLoading"
-            @click="magicPopulate"
-          >
-            Magic populate
+          <UButton v-if="fieldSchema?.fields?.length" icon="i-lucide-edit-3" variant="outline" color="neutral" size="sm"
+            :to="`/${locale}/entries/${id}/edit`">
+            Edit fields
           </UButton>
-          <UButton icon="i-lucide-save" size="sm" :loading="saving" @click="save">Save</UButton>
-          <UButton icon="i-lucide-archive" variant="ghost" color="neutral" size="sm" @click="archiveEntry">Archive</UButton>
+          <UButton icon="i-lucide-archive" variant="ghost" color="neutral" size="sm" :to="`/${locale}/archive`" />
         </div>
       </div>
 
-      <!-- Tabs -->
-      <UTabs v-model="activeTab" :items="tabs" class="entry-detail__tabs">
-        <template #content="{ item }">
-          <!-- Fields tab -->
-          <div v-if="item.value === 'fields'" class="entry-detail__panel">
-            <div v-if="!blueprint" class="entry-detail__no-blueprint">
-              <UIcon name="i-lucide-layout-template" />
-              <p>No blueprint defined yet.</p>
-              <UButton icon="i-lucide-plus" size="sm" @click="activeTab = 'blueprint'">Add blueprint</UButton>
-            </div>
-            <div v-else-if="!blueprint.fields?.length" class="entry-detail__no-blueprint">
-              <UIcon name="i-lucide-layout-template" />
-              <p>No fields defined yet.</p>
-              <UButton icon="i-lucide-plus" size="sm" @click="activeTab = 'blueprint'">Add fields</UButton>
-            </div>
-            <template v-else>
-              <div class="entry-detail__fields-toolbar">
-                <UButton icon="i-lucide-layout-template" variant="ghost" color="neutral" size="xs" @click="activeTab = 'blueprint'">
-                  Manage fields
-                </UButton>
-              </div>
-              <EntryForm
-                :fields="blueprint.fields"
-                :values="fieldValues"
-                :locale="locale"
-                @update:values="fieldValues = $event"
-              />
-            </template>
-          </div>
+      <!-- Children list (default view) -->
+      <EntryChildren :entry-id="entry.id" :locale="locale" :blueprint="blueprint"
+        @open-blueprint="showBlueprint = true" />
 
-          <!-- Children tab -->
-          <div v-if="item.value === 'children'" class="entry-detail__panel">
-            <EntryChildren :entry-id="entry.id" :locale="locale" />
-          </div>
-
-          <!-- Blueprint tab -->
-          <div v-if="item.value === 'blueprint'" class="entry-detail__panel">
-            <BlueprintEditor :entry-id="entry.id" :existing="blueprint" @saved="refreshBlueprint" />
-          </div>
+      <!-- Blueprint modal -->
+      <UModal v-model:open="showBlueprint" title="Blueprint" description="Define the field schema for children.">
+        <template #body>
+          <BlueprintEditor :entry-id="entry.id" :existing="blueprint" @saved="onBlueprintSaved" />
         </template>
-      </UTabs>
+      </UModal>
     </template>
 
     <div v-else class="entry-detail__not-found">
@@ -86,62 +47,23 @@
 </template>
 
 <script lang="ts" setup>
-import { useMagicPopulate } from '~/composables/useMagicPopulate'
-
 definePageMeta({ middleware: 'auth' })
 
 const route = useRoute()
 const locale = computed(() => String(route.params.locale))
 const id = computed(() => String(route.params.id))
-const saving = ref(false)
-const activeTab = ref('fields')
-const toast = useToast()
-
-const tabs = [
-  { label: 'Fields', value: 'fields', icon: 'i-lucide-edit-3' },
-  { label: 'Children', value: 'children', icon: 'i-lucide-git-branch' },
-  { label: 'Blueprint', value: 'blueprint', icon: 'i-lucide-layout-template' },
-]
+const showBlueprint = ref(false)
 
 const { data, pending, refresh } = await useFetch(() => `/api/entries/${id.value}`)
 const entry = computed(() => data.value as any)
 const blueprint = computed(() => entry.value?.blueprint ?? null)
+const fieldSchema = computed(() => entry.value?.fieldSchema ?? null)
 
-const fieldValues = ref<any[]>([])
-watch(entry, (e) => {
-  if (e) fieldValues.value = e.fieldValues ?? []
-}, { immediate: true })
-
-async function save() {
-  saving.value = true
-  try {
-    await $fetch(`/api/entries/${id.value}/values`, {
-      method: 'PUT',
-      body: { localeCode: locale.value, values: fieldValues.value },
-    })
-    toast.add({ title: 'Saved', color: 'success' })
-  }
-  catch {
-    toast.add({ title: 'Save failed', color: 'error' })
-  }
-  finally { saving.value = false }
-}
-
-async function refreshBlueprint() {
+async function onBlueprintSaved() {
+  showBlueprint.value = false
   await refresh()
 }
 
-async function archiveEntry() {
-  await $fetch(`/api/entries/${id.value}`, { method: 'DELETE' })
-  await navigateTo(`/${locale.value}`)
-}
-
-const { loading: magicLoading, populate } = useMagicPopulate(id.value, locale.value)
-async function magicPopulate() {
-  if (!blueprint.value?.fields) return
-  await populate(blueprint.value.fields, fieldValues.value)
-  await refresh()
-}
 </script>
 
 <style lang="scss" scoped>
@@ -177,35 +99,20 @@ async function magicPopulate() {
   &__bc-link {
     color: inherit;
     text-decoration: none;
-    &:hover { text-decoration: underline; }
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 
-  &__bc-sep { opacity: 0.4; }
+  &__bc-sep {
+    opacity: 0.4;
+  }
 
   &__actions {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-  }
-
-  &__tabs { margin-top: 0.5rem; }
-
-  &__panel { padding-top: 1rem; }
-
-  &__fields-toolbar {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 0.75rem;
-  }
-
-  &__no-blueprint {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 3rem;
-    text-align: center;
-    opacity: 0.5;
   }
 
   &__not-found {

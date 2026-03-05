@@ -27,7 +27,11 @@
         {{ new Date(row.original.updatedAt).toLocaleDateString() }}
       </template>
       <template #actions-cell="{ row }">
-        <UButton icon="i-lucide-archive" size="xs" variant="ghost" color="neutral" @click="archive(row.original.id)" />
+        <div class="entries-page__row-actions">
+          <UButton icon="i-lucide-edit-3" size="xs" variant="ghost" color="neutral" @click="openEdit(row.original)" />
+          <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error"
+            @click="confirmDelete(row.original)" />
+        </div>
       </template>
     </UTable>
 
@@ -35,10 +39,31 @@
       <span class="entries-page__total">{{ total }} entries</span>
       <UPagination v-model:page="page" :total="total" :items-per-page="limit" />
     </div>
+
+    <!-- Edit modal -->
+    <UModal v-model:open="showEdit" title="Edit entry" description="Update the entry details.">
+      <template #body>
+        <EntryNewEntryForm :key="editingEntry?.id" :locale="locale" :entry="editingEntry" @updated="onUpdated"
+          @cancel="showEdit = false" />
+      </template>
+    </UModal>
+
+    <!-- Delete confirmation modal -->
+    <UModal v-model:open="showDelete" title="Delete entry" description="Are you sure? This action cannot be undone.">
+      <template #body>
+        <p>Delete <strong>{{ deletingEntry?.title }}</strong>?</p>
+        <div class="entries-page__delete-actions">
+          <UButton color="error" :loading="deleting" @click="doDelete">Delete</UButton>
+          <UButton variant="ghost" @click="showDelete = false">Cancel</UButton>
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { useEntriesStore } from '~/stores/entries'
+
 definePageMeta({ middleware: 'auth' })
 
 const route = useRoute()
@@ -47,6 +72,12 @@ const search = ref('')
 const page = ref(1)
 const limit = 25
 const showNew = ref(false)
+const showEdit = ref(false)
+const showDelete = ref(false)
+const editingEntry = ref<any>(null)
+const deletingEntry = ref<any>(null)
+const deleting = ref(false)
+const entriesStore = useEntriesStore()
 
 const offset = computed(() => (page.value - 1) * limit)
 
@@ -73,12 +104,42 @@ const columns = [
 
 async function archive(id: string) {
   await $fetch(`/api/entries/${id}`, { method: 'DELETE' })
-  refresh()
+  entriesStore.refreshTree()
+  await refresh()
 }
 
-function onCreated() {
+async function onCreated() {
   showNew.value = false
-  refresh()
+  entriesStore.refreshTree()
+  await refresh()
+}
+
+function openEdit(entry: any) {
+  editingEntry.value = entry
+  showEdit.value = true
+}
+
+async function onUpdated() {
+  showEdit.value = false
+  entriesStore.refreshTree()
+  await refresh()
+}
+
+function confirmDelete(entry: any) {
+  deletingEntry.value = entry
+  showDelete.value = true
+}
+
+async function doDelete() {
+  if (!deletingEntry.value) return
+  deleting.value = true
+  try {
+    await $fetch(`/api/entries/${deletingEntry.value.id}`, { method: 'DELETE' })
+    showDelete.value = false
+    entriesStore.refreshTree()
+    refresh()
+  }
+  finally { deleting.value = false }
 }
 </script>
 
@@ -117,6 +178,20 @@ function onCreated() {
     &:hover {
       text-decoration: underline;
     }
+  }
+
+  &__row-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    justify-content: flex-end;
+  }
+
+  &__delete-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-top: 1rem;
   }
 
   &__pagination {
