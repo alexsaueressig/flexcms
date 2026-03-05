@@ -1,7 +1,7 @@
 <template>
   <div class="archive-page">
     <div class="archive-page__header">
-      <h1 class="archive-page__title">Archive</h1>
+      <h1 class="archive-page__title">{{ $t('archive.title') }}</h1>
     </div>
 
     <UTable :data="items" :columns="columns" :loading="pending">
@@ -17,29 +17,29 @@
       </template>
       <template #actions-cell="{ row }">
         <div class="archive-page__actions">
-          <UButton size="xs" variant="outline" @click="restoreTarget = row.original.id">Restore</UButton>
-          <UButton size="xs" variant="ghost" color="error" @click="confirm(row.original.id)">Delete</UButton>
+          <UButton size="xs" variant="outline" @click="restoreTarget = row.original.id">{{ $t('entries.restore') }}</UButton>
+          <UButton size="xs" variant="ghost" color="error" @click="confirm(row.original.id)">{{ $t('common.delete') }}</UButton>
         </div>
       </template>
     </UTable>
 
-    <UModal v-model:open="restoreTarget" title="Restore entry">
+    <UModal v-model:open="restoreTarget" :title="$t('archive.restoreTitle')">
       <template #body>
-        <p>Are you sure you want to restore this entry? It will become visible in the content tree again.</p>
+        <p>{{ $t('archive.restoreDescription') }}</p>
       </template>
       <template #footer>
-        <UButton color="primary" :loading="restoring" @click="doRestore">Restore</UButton>
-        <UButton variant="ghost" @click="restoreTarget = null">Cancel</UButton>
+        <UButton color="primary" :loading="restoring" @click="doRestore">{{ $t('entries.restore') }}</UButton>
+        <UButton variant="ghost" @click="restoreTarget = null">{{ $t('entries.cancel') }}</UButton>
       </template>
     </UModal>
 
-    <UModal v-model:open="deleteTarget" title="Delete permanently">
+    <UModal v-model:open="deleteTarget" :title="$t('archive.deleteTitle')">
       <template #body>
-        <p>This will permanently delete the entry and all its children. This action cannot be undone.</p>
+        <p>{{ $t('archive.deleteDescription') }}</p>
       </template>
       <template #footer>
-        <UButton color="error" @click="doDelete">Delete permanently</UButton>
-        <UButton variant="ghost" @click="deleteTarget = null">Cancel</UButton>
+        <UButton color="error" @click="doDelete">{{ $t('entries.delete') }}</UButton>
+        <UButton variant="ghost" @click="deleteTarget = null">{{ $t('entries.cancel') }}</UButton>
       </template>
     </UModal>
   </div>
@@ -50,6 +50,7 @@ import { useEntriesStore } from '~/stores/entries'
 
 definePageMeta({ middleware: 'auth' })
 
+const { t } = useI18n()
 const route = useRoute()
 const locale = computed(() => String(route.params.locale))
 const deleteTarget = ref<string | null>(null)
@@ -61,23 +62,24 @@ const entriesStore = useEntriesStore()
 
 const { data, pending, refresh } = await useFetch('/api/entries', {
   params: computed(() => ({ locale: locale.value, archived: true, limit: 100 })),
+  watch: [locale],
 })
 
 const items = computed(() => (data.value as any)?.items ?? [])
 
-const columns = [
-  { accessorKey: 'title', header: 'Entry' },
-  { accessorKey: 'archivedAt', header: 'Archived on' },
-  { accessorKey: 'authorName', header: 'Author' },
+const columns = computed(() => [
+  { accessorKey: 'title', header: t('table.entry') },
+  { accessorKey: 'archivedAt', header: t('table.archivedOn') },
+  { accessorKey: 'authorName', header: t('table.author') },
   { accessorKey: 'actions', header: '' },
-]
+])
 
 async function doRestore() {
   if (!restoreTarget.value) return
   restoring.value = true
   try {
     await $fetch(`/api/entries/${restoreTarget.value}/restore`, { method: 'PATCH' })
-    toast.add({ title: 'Entry restored', color: 'success' })
+    toast.add({ title: t('archive.restored'), color: 'success' })
     entriesStore.refreshTree()
     refresh()
     restoreTarget.value = null
@@ -92,7 +94,7 @@ function confirm(id: string) {
 
 async function doDelete() {
   // Hard delete not shown in UI – entries stay archived; admins purge via DB
-  toast.add({ title: 'Not implemented', description: 'Hard delete is done by a DB admin.', color: 'warning' })
+  toast.add({ title: t('archive.notImplemented'), description: t('archive.hardDeleteNote'), color: 'warning' })
   deleteTarget.value = null
 }
 </script>

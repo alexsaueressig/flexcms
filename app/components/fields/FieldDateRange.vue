@@ -1,8 +1,8 @@
 <template>
   <div class="field-daterange">
-    <UInput type="date" :model-value="start" placeholder="Start" @update:model-value="start = $event; emit()" />
+    <UInput type="date" :model-value="start" :placeholder="$t('fields.dateStart')" @update:model-value="start = $event; emit()" />
     <span class="field-daterange__sep">→</span>
-    <UInput type="date" :model-value="end" placeholder="End" @update:model-value="end = $event; emit()" />
+    <UInput type="date" :model-value="end" :placeholder="$t('fields.dateEnd')" @update:model-value="end = $event; emit()" />
   </div>
 </template>
 

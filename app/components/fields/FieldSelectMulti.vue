@@ -1,5 +1,5 @@
 <template>
-  <USelectMenu :model-value="selected" :items="options" multiple placeholder="Select options"
+  <USelectMenu :model-value="selected" :items="options" multiple :placeholder="$t('fields.selectOptions')"
     @update:model-value="onUpdate" />
 </template>
 

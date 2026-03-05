@@ -1,11 +1,11 @@
 <template>
-  <UModal :open="true" title="Search" description="Search entries by title or slug." @close="uiStore.closeSearch()"
+  <UModal :open="true" :title="$t('search.title')" :description="$t('search.description')" @close="uiStore.closeSearch()"
     :ui="{ width: 'max-w-xl' }">
     <template #body>
       <div class="search-modal">
         <div class="search-modal__input-wrap">
           <UIcon name="i-lucide-search" class="search-modal__icon" />
-          <input ref="inputRef" v-model="query" placeholder="Search entries…" class="search-modal__input"
+          <input ref="inputRef" v-model="query" :placeholder="$t('search.placeholder')" class="search-modal__input"
             @keydown.escape="uiStore.closeSearch()" />
           <UKbd value="esc" />
         </div>
@@ -15,7 +15,7 @@
         </div>
 
         <div v-else-if="results.length === 0 && query.length > 1" class="search-modal__state">
-          No results for "{{ query }}"
+          {{ $t('search.noResults', { query }) }}
         </div>
 
         <ul v-else class="search-modal__results">
@@ -35,17 +35,18 @@
 import { useUiStore } from '~/stores/ui'
 
 const uiStore = useUiStore()
+const route = useRoute()
 const query = ref('')
 const results = ref<any[]>([])
 const pending = ref(false)
 const inputRef = ref<HTMLInputElement | null>(null)
-const locale = uiStore.activeLocale
+const locale = computed(() => String(route.params.locale || uiStore.activeLocale))
 
 const { pause, resume } = useThrottleFn(async () => {
   if (query.value.length < 2) { results.value = []; return }
   pending.value = true
   try {
-    results.value = await $fetch('/api/search', { params: { q: query.value, locale } })
+    results.value = await $fetch('/api/search', { params: { q: query.value, locale: locale.value } })
   }
   finally { pending.value = false }
 }, 300)
@@ -55,7 +56,7 @@ watch(query, () => resume())
 onMounted(() => nextTick(() => inputRef.value?.focus()))
 
 function go(entry: any) {
-  navigateTo(`/${locale}/entries/${entry.id}`)
+  navigateTo(`/${locale.value}/entries/${entry.id}`)
   uiStore.closeSearch()
 }
 </script>

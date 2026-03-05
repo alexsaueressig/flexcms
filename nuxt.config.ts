@@ -11,6 +11,7 @@ export default defineNuxtConfig({
         '@nuxt/image',
         '@nuxtjs/i18n',
         '@vueuse/nuxt',
+        '@nuxtjs/google-fonts',
     ],
 
     css: ['~/assets/css/main.css', '~/assets/scss/main.scss'],
@@ -21,7 +22,7 @@ export default defineNuxtConfig({
     // ---------------------------------------------------------------------------
     i18n: {
         strategy: 'no_prefix',
-        defaultLocale: 'br',
+        defaultLocale: 'en',
         locales: [
             { code: 'br', language: 'pt-BR', name: 'Português (BR)' },
             { code: 'en', language: 'en-US', name: 'English' },
@@ -100,5 +101,18 @@ export default defineNuxtConfig({
     // ---------------------------------------------------------------------------
     pinia: {
         storesDirs: ['./app/stores/**'],
+    },
+
+    // ---------------------------------------------------------------------------
+    // Google Fonts – downloaded and self-hosted at build time
+    // ---------------------------------------------------------------------------
+    googleFonts: {
+        families: {
+            Inter: [300, 400, 500, 600, 700],
+            'JetBrains Mono': [400, 500],
+        },
+        display: 'swap',
+        download: true,
+        preload: true,
     },
 })

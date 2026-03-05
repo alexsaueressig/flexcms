@@ -8,7 +8,7 @@
       <!-- Header -->
       <div class="entry-detail__header">
         <div class="entry-detail__breadcrumb">
-          <NuxtLink :to="`/${locale}`" class="entry-detail__bc-link">Entries</NuxtLink>
+          <NuxtLink :to="`/${locale}`" class="entry-detail__bc-link">{{ $t('entries.title') }}</NuxtLink>
           <UIcon name="i-lucide-chevron-right" class="entry-detail__bc-sep" />
           <span v-if="entry.parent">
             <NuxtLink :to="`/${locale}/entries/${entry.parent.id}`" class="entry-detail__bc-link">
@@ -22,7 +22,7 @@
         <div class="entry-detail__actions">
           <UButton v-if="fieldSchema?.fields?.length" icon="i-lucide-edit-3" variant="outline" color="neutral" size="sm"
             :to="`/${locale}/entries/${id}/edit`">
-            Edit fields
+            {{ $t('entries.editFields') }}
           </UButton>
           <UButton icon="i-lucide-archive" variant="ghost" color="neutral" size="sm" :to="`/${locale}/archive`" />
         </div>
@@ -33,7 +33,7 @@
         @open-blueprint="showBlueprint = true" />
 
       <!-- Blueprint modal -->
-      <UModal v-model:open="showBlueprint" title="Blueprint" description="Define the field schema for children.">
+      <UModal v-model:open="showBlueprint" :title="$t('blueprint.title')" :description="$t('blueprint.description')">
         <template #body>
           <BlueprintEditor :entry-id="entry.id" :existing="blueprint" @saved="onBlueprintSaved" />
         </template>
@@ -41,7 +41,7 @@
     </template>
 
     <div v-else class="entry-detail__not-found">
-      Entry not found.
+      {{ $t('entries.notFound') }}
     </div>
   </div>
 </template>

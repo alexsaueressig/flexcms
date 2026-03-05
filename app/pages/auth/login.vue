@@ -2,17 +2,17 @@
   <div>
     <NuxtLayout name="auth">
       <div class="login-page">
-        <h1 class="login-page__title">Sign in</h1>
-        <p class="login-page__sub">Enter your email to receive a sign-in code</p>
+        <h1 class="login-page__title">{{ $t('auth.login') }}</h1>
+        <p class="login-page__sub">{{ $t('auth.emailSubtitle') }}</p>
 
         <UForm :schema="schema" :state="state" @submit="submit">
-          <UFormField label="Email address" name="email">
+          <UFormField :label="$t('auth.email')" name="email">
             <UInput v-model="state.email" type="email" placeholder="you@example.com" autocomplete="email" autofocus
               size="lg" class="login-page__input" />
           </UFormField>
 
           <UButton type="submit" :loading="pending" class="login-page__btn" size="lg" block>
-            Send code
+            {{ $t('auth.sendCode') }}
           </UButton>
         </UForm>
       </div>
@@ -25,7 +25,8 @@ import { z } from 'zod'
 
 definePageMeta({ layout: false })
 
-const schema = z.object({ email: z.string().email('Enter a valid email') })
+const { t } = useI18n()
+const schema = computed(() => z.object({ email: z.string().email(t('auth.errors.invalidEmail')) }))
 const state = reactive({ email: '' })
 const pending = ref(false)
 const toast = useToast()
@@ -37,7 +38,7 @@ async function submit() {
     await navigateTo({ path: '/auth/verify', query: { email: state.email, ...(res.devOtp ? { otp: res.devOtp } : {}) } })
   }
   catch (e: any) {
-    toast.add({ title: 'Error', description: e.data?.message ?? 'Something went wrong', color: 'error' })
+    toast.add({ title: t('common.error'), description: e.data?.message ?? t('errors.serverError'), color: 'error' })
   }
   finally { pending.value = false }
 }

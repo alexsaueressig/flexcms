@@ -16,7 +16,7 @@
     </div>
     <UInput
       v-model="inputVal"
-      placeholder="Add tag and press Enter"
+      :placeholder="$t('fields.tagsPlaceholder')"
       @keydown.enter.prevent="add"
       @keydown.comma.prevent="add"
     />

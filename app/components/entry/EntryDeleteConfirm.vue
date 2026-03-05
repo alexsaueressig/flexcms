@@ -1,10 +1,10 @@
 <template>
-    <UModal v-model:open="open" title="Delete entry" description="Are you sure? This action cannot be undone.">
+    <UModal v-model:open="open" :title="$t('entries.deleteEntry')" :description="$t('entries.deleteDescription')">
         <template #body>
-            <p>Delete <strong>{{ title }}</strong>?</p>
+            <p>{{ $t('entries.confirmDeleteMsg', { title }) }}</p>
             <div class="delete-confirm__actions">
-                <UButton color="error" :loading="loading" @click="$emit('confirm')">Delete</UButton>
-                <UButton variant="ghost" @click="open = false">Cancel</UButton>
+                <UButton color="error" :loading="loading" @click="$emit('confirm')">{{ $t('common.delete') }}</UButton>
+                <UButton variant="ghost" @click="open = false">{{ $t('entries.cancel') }}</UButton>
             </div>
         </template>
     </UModal>

@@ -4,20 +4,20 @@
       <UIcon name="i-lucide-loader-2" class="animate-spin" />
     </div>
     <template v-else>
-      <UFormField label="Title" name="title" required>
-        <UInput v-model="state.title" placeholder="My entry" @input="autoSlug" />
+      <UFormField :label="$t('entries.form.titleLabel')" name="title" required>
+        <UInput v-model="state.title" :placeholder="$t('entries.form.titlePlaceholder')" @input="autoSlug" />
       </UFormField>
 
-      <UFormField label="Slug" name="slug" required>
-        <UInput v-model="state.slug" placeholder="my-entry" :ui="{ base: 'font-mono text-sm' }" />
+      <UFormField :label="$t('entries.form.slug')" name="slug" required>
+        <UInput v-model="state.slug" :placeholder="$t('entries.form.slugPlaceholder')" :ui="{ base: 'font-mono text-sm' }" />
       </UFormField>
 
       <EntryForm v-if="fields.length" :fields="fields" :values="fieldValues" :locale="locale"
         @update:values="fieldValues = $event" />
 
       <div class="new-entry-form__actions">
-        <UButton type="submit" :loading="pending">{{ entry ? 'Save' : 'Create entry' }}</UButton>
-        <UButton variant="ghost" type="button" @click="$emit('cancel')">Cancel</UButton>
+        <UButton type="submit" :loading="pending">{{ entry ? $t('entries.save') : $t('entries.createEntry') }}</UButton>
+        <UButton variant="ghost" type="button" @click="$emit('cancel')">{{ $t('entries.cancel') }}</UButton>
       </div>
     </template>
   </UForm>
@@ -34,10 +34,11 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ created: [entry: any]; updated: [entry: any]; cancel: [] }>()
 
-const schema = z.object({
-  title: z.string().min(1, 'Required'),
-  slug: z.string().min(1).regex(/^[a-z0-9-_]+$/, 'Lowercase letters, numbers, hyphens only'),
-})
+const { t } = useI18n()
+const schema = computed(() => z.object({
+  title: z.string().min(1, t('entries.form.required')),
+  slug: z.string().min(1).regex(/^[a-z0-9-_]+$/, t('entries.form.slugFormat')),
+}))
 const state = reactive({
   title: props.entry?.title ?? '',
   slug: props.entry?.slug ?? '',
@@ -95,7 +96,7 @@ async function submit() {
     }
   }
   catch (e: any) {
-    toast.add({ title: 'Error', description: e.data?.message ?? 'Operation failed', color: 'error' })
+    toast.add({ title: t('common.error'), description: e.data?.message ?? t('entries.form.operationFailed'), color: 'error' })
   }
   finally { pending.value = false }
 }

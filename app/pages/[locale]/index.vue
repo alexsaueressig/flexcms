@@ -1,9 +1,9 @@
 <template>
   <div class="entries-page">
     <div class="entries-page__header">
-      <h1 class="entries-page__title">Entries</h1>
-      <UModal v-model:open="showNew" title="New entry" description="Fill in the details to create a new entry.">
-        <UButton icon="i-lucide-plus">New entry</UButton>
+      <h1 class="entries-page__title">{{ $t('entries.title') }}</h1>
+      <UModal v-model:open="showNew" :title="$t('entries.new')" :description="$t('entries.newDescription')">
+        <UButton icon="i-lucide-plus">{{ $t('entries.new') }}</UButton>
         <template #body>
           <EntryNewEntryForm :locale="locale" @created="onCreated" @cancel="showNew = false" />
         </template>
@@ -11,7 +11,7 @@
     </div>
 
     <div class="entries-page__toolbar">
-      <UInput v-model="search" icon="i-lucide-search" placeholder="Search entries…" class="entries-page__search" />
+      <UInput v-model="search" icon="i-lucide-search" :placeholder="$t('entries.search')" class="entries-page__search" />
     </div>
 
     <UTable :data="items" :columns="columns" :loading="pending">
@@ -36,48 +36,33 @@
     </UTable>
 
     <div class="entries-page__pagination">
-      <span class="entries-page__total">{{ total }} entries</span>
+      <span class="entries-page__total">{{ $t('entries.count', { count: total }) }}</span>
       <UPagination v-model:page="page" :total="total" :items-per-page="limit" />
     </div>
 
     <!-- Edit modal -->
-    <UModal v-model:open="showEdit" title="Edit entry" description="Update the entry details.">
+    <UModal v-model:open="showEdit" :title="$t('entries.editEntry')" :description="$t('entries.editDescription')">
       <template #body>
         <EntryNewEntryForm :key="editingEntry?.id" :locale="locale" :entry="editingEntry" @updated="onUpdated"
           @cancel="showEdit = false" />
       </template>
     </UModal>
 
-    <!-- Delete confirmation modal -->
-    <UModal v-model:open="showDelete" title="Delete entry" description="Are you sure? This action cannot be undone.">
-      <template #body>
-        <p>Delete <strong>{{ deletingEntry?.title }}</strong>?</p>
-        <div class="entries-page__delete-actions">
-          <UButton color="error" :loading="deleting" @click="doDelete">Delete</UButton>
-          <UButton variant="ghost" @click="showDelete = false">Cancel</UButton>
-        </div>
-      </template>
-    </UModal>
+    <!-- Delete confirmation -->
+    <EntryDeleteConfirm v-model:open="showDelete" :title="deletingEntry?.title" :loading="deleting"
+      @confirm="doDelete" />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { useEntriesStore } from '~/stores/entries'
-
 definePageMeta({ middleware: 'auth' })
 
+const { t } = useI18n()
 const route = useRoute()
 const locale = computed(() => String(route.params.locale))
 const search = ref('')
 const page = ref(1)
 const limit = 25
-const showNew = ref(false)
-const showEdit = ref(false)
-const showDelete = ref(false)
-const editingEntry = ref<any>(null)
-const deletingEntry = ref<any>(null)
-const deleting = ref(false)
-const entriesStore = useEntriesStore()
 
 const offset = computed(() => (page.value - 1) * limit)
 
@@ -94,53 +79,19 @@ const { data, pending, refresh } = await useFetch('/api/entries', {
 const items = computed(() => data.value?.items ?? [])
 const total = computed(() => data.value?.total ?? 0)
 
-const columns = [
-  { accessorKey: 'title', header: 'Title' },
-  { accessorKey: 'slug', header: 'Slug' },
-  { accessorKey: 'children', header: 'Children' },
-  { accessorKey: 'updatedAt', header: 'Updated' },
+const columns = computed(() => [
+  { accessorKey: 'title', header: t('table.title') },
+  { accessorKey: 'slug', header: t('table.slug') },
+  { accessorKey: 'children', header: t('table.children') },
+  { accessorKey: 'updatedAt', header: t('table.updated') },
   { accessorKey: 'actions', header: '' },
-]
+])
 
-async function archive(id: string) {
-  await $fetch(`/api/entries/${id}`, { method: 'DELETE' })
-  entriesStore.refreshTree()
-  await refresh()
-}
-
-async function onCreated() {
-  showNew.value = false
-  entriesStore.refreshTree()
-  await refresh()
-}
-
-function openEdit(entry: any) {
-  editingEntry.value = entry
-  showEdit.value = true
-}
-
-async function onUpdated() {
-  showEdit.value = false
-  entriesStore.refreshTree()
-  await refresh()
-}
-
-function confirmDelete(entry: any) {
-  deletingEntry.value = entry
-  showDelete.value = true
-}
-
-async function doDelete() {
-  if (!deletingEntry.value) return
-  deleting.value = true
-  try {
-    await $fetch(`/api/entries/${deletingEntry.value.id}`, { method: 'DELETE' })
-    showDelete.value = false
-    entriesStore.refreshTree()
-    refresh()
-  }
-  finally { deleting.value = false }
-}
+const {
+  showNew, showEdit, showDelete,
+  editingEntry, deletingEntry, deleting,
+  onCreated, openEdit, onUpdated, confirmDelete, doDelete,
+} = useEntryCrud(refresh)
 </script>
 
 <style lang="scss" scoped>
@@ -185,13 +136,6 @@ async function doDelete() {
     align-items: center;
     gap: 0.25rem;
     justify-content: flex-end;
-  }
-
-  &__delete-actions {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: flex-end;
-    margin-top: 1rem;
   }
 
   &__pagination {

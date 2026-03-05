@@ -17,19 +17,20 @@ import { useAuthStore } from '~/stores/auth'
 
 defineEmits<{ 'new-entry': [] }>()
 
+const { t } = useI18n()
 const uiStore = useUiStore()
 const auth = useAuthStore()
 const locale = computed(() => uiStore.activeLocale)
 
 const navItems = computed(() => {
   const base = [
-    { label: 'Entries', icon: 'i-lucide-file-text', to: `/${locale.value}` },
-    { label: 'Archive', icon: 'i-lucide-archive', to: `/${locale.value}/archive` },
+    { label: t('nav.entries'), icon: 'i-lucide-file-text', to: `/${locale.value}` },
+    { label: t('nav.archive'), icon: 'i-lucide-archive', to: `/${locale.value}/archive` },
   ]
   if (auth.isSuperAdmin) {
     base.push(
-      { label: 'Users', icon: 'i-lucide-users', to: `/${locale.value}/admin/users` },
-      { label: 'Roles', icon: 'i-lucide-shield', to: `/${locale.value}/admin/roles` },
+      { label: t('nav.users'), icon: 'i-lucide-users', to: `/${locale.value}/admin/users` },
+      { label: t('nav.roles'), icon: 'i-lucide-shield', to: `/${locale.value}/admin/roles` },
     )
   }
   return base

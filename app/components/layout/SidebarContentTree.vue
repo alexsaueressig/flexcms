@@ -1,7 +1,7 @@
 <template>
     <div class="sidebar-tree">
         <div class="sidebar-tree__header">
-            <span class="sidebar-tree__title">Content tree</span>
+            <span class="sidebar-tree__title">{{ $t('contentTree.title') }}</span>
             <UButton icon="i-lucide-plus" size="xs" variant="ghost" color="neutral" @click="$emit('new-entry')" />
         </div>
         <LayoutEntryTreeNode v-for="entry in rootEntries" :key="entry.id" :entry="entry" />

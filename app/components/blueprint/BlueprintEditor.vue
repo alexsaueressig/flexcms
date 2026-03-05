@@ -1,15 +1,15 @@
 <template>
   <div class="blueprint-editor">
     <div class="blueprint-editor__toolbar">
-      <UButton icon="i-lucide-plus" size="sm" @click="addField">Add field</UButton>
+      <UButton icon="i-lucide-plus" size="sm" @click="addField">{{ $t('blueprint.addField') }}</UButton>
       <UButton icon="i-lucide-save" size="sm" :loading="saving" variant="outline" @click="save">
-        Save blueprint
+        {{ $t('blueprint.save') }}
       </UButton>
     </div>
 
     <div v-if="fields.length === 0" class="blueprint-editor__empty">
       <UIcon name="i-lucide-layout-template" />
-      <p>No fields yet. Add one to define the content schema.</p>
+      <p>{{ $t('blueprint.emptyState') }}</p>
     </div>
 
     <VueDraggable v-else v-model="fields" handle=".blueprint-field-row__handle" class="blueprint-editor__list">
@@ -28,6 +28,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{ saved: [] }>()
+const { t } = useI18n()
 const saving = ref(false)
 const toast = useToast()
 
@@ -44,25 +45,25 @@ interface Field {
 
 const fields = ref<Field[]>(props.existing?.fields?.map((f: any) => ({ ...f })) ?? [])
 
-const typeOptions = [
-  { value: 'STRING', label: 'Short text' },
-  { value: 'RICH_TEXT', label: 'Rich text' },
-  { value: 'NUMBER', label: 'Number' },
-  { value: 'BOOLEAN', label: 'Boolean' },
-  { value: 'MEDIA_IMAGE', label: 'Image' },
-  { value: 'MEDIA_VIDEO', label: 'Video' },
-  { value: 'MEDIA_FILE', label: 'File' },
-  { value: 'DATETIME', label: 'Date & time' },
-  { value: 'DATE_RANGE', label: 'Date range' },
-  { value: 'SELECT_SINGLE', label: 'Single select' },
-  { value: 'SELECT_MULTI', label: 'Multi-select' },
-  { value: 'TAGS', label: 'Tags' },
-  { value: 'RELATION_ONE', label: 'Relation (one)' },
-  { value: 'RELATION_MANY', label: 'Relation (many)' },
-  { value: 'GEO', label: 'Geospatial' },
-  { value: 'JSON', label: 'JSON blob' },
-  { value: 'COLOR', label: 'Color' },
-]
+const typeOptions = computed(() => [
+  { value: 'STRING', label: t('fields.types.string') },
+  { value: 'RICH_TEXT', label: t('fields.types.rich_text') },
+  { value: 'NUMBER', label: t('fields.types.number') },
+  { value: 'BOOLEAN', label: t('fields.types.boolean') },
+  { value: 'MEDIA_IMAGE', label: t('fields.types.media_image') },
+  { value: 'MEDIA_VIDEO', label: t('fields.types.media_video') },
+  { value: 'MEDIA_FILE', label: t('fields.types.media_file') },
+  { value: 'DATETIME', label: t('fields.types.datetime') },
+  { value: 'DATE_RANGE', label: t('fields.types.date_range') },
+  { value: 'SELECT_SINGLE', label: t('fields.types.select_single') },
+  { value: 'SELECT_MULTI', label: t('fields.types.select_multi') },
+  { value: 'TAGS', label: t('fields.types.tags') },
+  { value: 'RELATION_ONE', label: t('fields.types.relation_one') },
+  { value: 'RELATION_MANY', label: t('fields.types.relation_many') },
+  { value: 'GEO', label: t('fields.types.geo') },
+  { value: 'JSON', label: t('fields.types.json') },
+  { value: 'COLOR', label: t('fields.types.color') },
+])
 
 function addField() {
   fields.value.push({
@@ -79,11 +80,11 @@ async function save() {
       method: 'PUT',
       body: { fields: fields.value.map((f, i) => ({ ...f, order: i })) },
     })
-    toast.add({ title: 'Blueprint saved', color: 'success' })
+    toast.add({ title: t('blueprint.saved'), color: 'success' })
     emit('saved')
   }
   catch (e: any) {
-    toast.add({ title: 'Save failed', description: e.data?.message, color: 'error' })
+    toast.add({ title: t('blueprint.saveFailed'), description: e.data?.message, color: 'error' })
   }
   finally { saving.value = false }
 }

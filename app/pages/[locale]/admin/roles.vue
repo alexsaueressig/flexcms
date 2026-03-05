@@ -1,8 +1,8 @@
 <template>
   <div class="roles-page">
     <div class="roles-page__header">
-      <h1 class="roles-page__title">Roles & Permissions</h1>
-      <UButton icon="i-lucide-plus" @click="showNew = true">New role</UButton>
+      <h1 class="roles-page__title">{{ $t('roles.title') }}</h1>
+      <UButton icon="i-lucide-plus" @click="showNew = true">{{ $t('roles.new') }}</UButton>
     </div>
 
     <div class="roles-page__grid">
@@ -16,7 +16,7 @@
             <h3 class="roles-page__role-name">{{ role.name }}</h3>
             <p v-if="role.description" class="roles-page__role-desc">{{ role.description }}</p>
           </div>
-          <UBadge v-if="role.isSystem" label="System" color="neutral" size="xs" />
+          <UBadge v-if="role.isSystem" :label="$t('roles.system')" color="neutral" size="xs" />
           <UButton
             v-if="!role.isSystem"
             size="xs"
@@ -29,13 +29,13 @@
 
         <div class="roles-page__perms">
           <div class="roles-page__perm-row roles-page__perm-header">
-            <span>Global permission</span>
+            <span>{{ $t('roles.globalPermission') }}</span>
             <div class="roles-page__perm-flags">
-              <span>View</span><span>Create</span><span>Edit</span><span>Archive</span>
+              <span>{{ $t('roles.view') }}</span><span>{{ $t('roles.create') }}</span><span>{{ $t('roles.edit') }}</span><span>{{ $t('roles.archive') }}</span>
             </div>
           </div>
           <div class="roles-page__perm-row">
-            <span class="roles-page__perm-scope">All entries</span>
+            <span class="roles-page__perm-scope">{{ $t('roles.allEntries') }}</span>
             <div class="roles-page__perm-flags">
               <UCheckbox v-model="rolePermMap[role.id].canView" @change="savePerms(role.id)" />
               <UCheckbox v-model="rolePermMap[role.id].canCreate" @change="savePerms(role.id)" />
@@ -46,19 +46,19 @@
         </div>
 
         <div class="roles-page__users-count">
-          {{ role._count?.users ?? 0 }} user{{ role._count?.users === 1 ? '' : 's' }}
+          {{ $t('roles.userCount', { count: role._count?.users ?? 0 }, role._count?.users ?? 0) }}
         </div>
       </div>
     </div>
 
-    <UModal v-model:open="showNew" title="New role">
+    <UModal v-model:open="showNew" :title="$t('roles.new')">
       <template #body>
         <UForm :state="newRole" @submit="createRole">
-          <UFormField label="Name"><UInput v-model="newRole.name" /></UFormField>
-          <UFormField label="Description"><UInput v-model="newRole.description" /></UFormField>
+          <UFormField :label="$t('roles.name')"><UInput v-model="newRole.name" /></UFormField>
+          <UFormField :label="$t('roles.description')"><UInput v-model="newRole.description" /></UFormField>
           <div class="roles-page__modal-actions">
-            <UButton type="submit" :loading="creating">Create</UButton>
-            <UButton variant="ghost" @click="showNew = false">Cancel</UButton>
+            <UButton type="submit" :loading="creating">{{ $t('common.create') }}</UButton>
+            <UButton variant="ghost" @click="showNew = false">{{ $t('entries.cancel') }}</UButton>
           </div>
         </UForm>
       </template>
@@ -69,53 +69,17 @@
 <script lang="ts" setup>
 definePageMeta({ middleware: 'auth' })
 
-const showNew = ref(false)
-const creating = ref(false)
-const newRole = reactive({ name: '', description: '' })
-const toast = useToast()
+const { t } = useI18n()
 
 const { data, refresh } = await useFetch('/api/roles')
 const roles = computed(() => data.value as any[] ?? [])
 
-// Build a reactive permission map per role (global permissions only)
-const rolePermMap = ref<Record<string, { canView: boolean; canCreate: boolean; canEdit: boolean; canArchive: boolean }>>({})
+const {
+  showNew, creating, newRole, rolePermMap,
+  syncPermMap, savePerms, createRole, deleteRole,
+} = useRoleCrud(refresh)
 
-watch(roles, (rs) => {
-  for (const role of rs) {
-    const globalPerm = role.permissions?.find((p: any) => !p.entryId)
-    rolePermMap.value[role.id] = {
-      canView: globalPerm?.canView ?? false,
-      canCreate: globalPerm?.canCreate ?? false,
-      canEdit: globalPerm?.canEdit ?? false,
-      canArchive: globalPerm?.canArchive ?? false,
-    }
-  }
-}, { immediate: true })
-
-async function savePerms(roleId: string) {
-  const p = rolePermMap.value[roleId]
-  await $fetch(`/api/roles/${roleId}/permissions`, {
-    method: 'PUT',
-    body: { permissions: [{ entryId: null, ...p }] },
-  })
-  toast.add({ title: 'Permissions updated', color: 'success' })
-}
-
-async function createRole() {
-  creating.value = true
-  try {
-    await $fetch('/api/roles', { method: 'POST', body: newRole })
-    toast.add({ title: 'Role created', color: 'success' })
-    showNew.value = false
-    refresh()
-  }
-  finally { creating.value = false }
-}
-
-async function deleteRole(id: string) {
-  await $fetch(`/api/roles/${id}`, { method: 'DELETE' })
-  refresh()
-}
+watch(roles, (rs) => syncPermMap(rs), { immediate: true })
 </script>
 
 <style lang="scss" scoped>

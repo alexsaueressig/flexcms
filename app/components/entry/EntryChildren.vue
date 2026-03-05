@@ -1,12 +1,12 @@
 <template>
   <div class="entry-children">
     <div class="entry-children__header">
-      <UInput v-model="search" icon="i-lucide-search" placeholder="Search children…" class="entry-children__search" />
+      <UInput v-model="search" icon="i-lucide-search" :placeholder="$t('entries.searchChildren')" class="entry-children__search" />
       <div class="entry-children__header-actions">
         <UButton icon="i-lucide-settings" size="sm" variant="ghost" color="neutral" @click="$emit('open-blueprint')" />
-        <UModal v-model:open="showNew" title="New child entry"
-          description="Fill in the details to create a new child entry.">
-          <UButton icon="i-lucide-plus" size="sm">New child</UButton>
+        <UModal v-model:open="showNew" :title="$t('entries.newChildTitle')"
+          :description="$t('entries.newChildDescription')">
+          <UButton icon="i-lucide-plus" size="sm">{{ $t('entries.newChild') }}</UButton>
           <template #body>
             <EntryNewEntryForm :locale="locale" :parent-id="entryId" :fields="blueprint?.fields ?? []"
               @created="onCreate" @cancel="showNew = false" />
@@ -36,7 +36,7 @@
     <UPagination v-model:page="page" :total="total" :items-per-page="limit" />
 
     <!-- Edit modal -->
-    <UModal v-model:open="showEdit" title="Edit entry" description="Update the entry details.">
+    <UModal v-model:open="showEdit" :title="$t('entries.editEntry')" :description="$t('entries.editDescription')">
       <template #body>
         <EntryNewEntryForm :key="editingEntry?.id" :locale="locale" :parent-id="entryId"
           :fields="blueprint?.fields ?? []" :entry="editingEntry" @updated="onUpdated" @cancel="showEdit = false" />
@@ -50,71 +50,35 @@
 </template>
 
 <script lang="ts" setup>
-import { useEntriesStore } from '~/stores/entries'
-
 const props = defineProps<{ entryId: string; locale: string; blueprint?: any }>()
 defineEmits<{ 'open-blueprint': [] }>()
+const { t } = useI18n()
 const search = ref('')
 const page = ref(1)
 const limit = 25
-const showNew = ref(false)
-const showEdit = ref(false)
-const showDelete = ref(false)
-const editingEntry = ref<any>(null)
-const deletingEntry = ref<any>(null)
-const deleting = ref(false)
-const entriesStore = useEntriesStore()
 
 const offset = computed(() => (page.value - 1) * limit)
 
 const { data, pending, refresh } = useFetch(() => `/api/entries/${props.entryId}/children`, {
   params: computed(() => ({ locale: props.locale, limit, offset: offset.value, search: search.value || undefined })),
-  watch: [search, offset],
+  watch: [() => props.locale, search, offset],
 })
 
 const items = computed(() => (data.value as any)?.items ?? [])
 const total = computed(() => (data.value as any)?.total ?? 0)
 
-const columns = [
-  { accessorKey: 'title', header: 'Title' },
-  { accessorKey: 'slug', header: 'Slug' },
-  { accessorKey: 'children', header: 'Children' },
+const columns = computed(() => [
+  { accessorKey: 'title', header: t('table.title') },
+  { accessorKey: 'slug', header: t('table.slug') },
+  { accessorKey: 'children', header: t('table.children') },
   { accessorKey: 'actions', header: '' },
-]
+])
 
-async function onCreate() {
-  showNew.value = false
-  entriesStore.refreshTree()
-  await refresh()
-}
-
-function openEdit(entry: any) {
-  editingEntry.value = entry
-  showEdit.value = true
-}
-
-async function onUpdated() {
-  showEdit.value = false
-  entriesStore.refreshTree()
-  await refresh()
-}
-
-function confirmDelete(entry: any) {
-  deletingEntry.value = entry
-  showDelete.value = true
-}
-
-async function doDelete() {
-  if (!deletingEntry.value) return
-  deleting.value = true
-  try {
-    await $fetch(`/api/entries/${deletingEntry.value.id}`, { method: 'DELETE' })
-    showDelete.value = false
-    entriesStore.refreshTree()
-    refresh()
-  }
-  finally { deleting.value = false }
-}
+const {
+  showNew, showEdit, showDelete,
+  editingEntry, deletingEntry, deleting,
+  onCreated: onCreate, openEdit, onUpdated, confirmDelete, doDelete,
+} = useEntryCrud(refresh)
 </script>
 
 <style lang="scss" scoped>

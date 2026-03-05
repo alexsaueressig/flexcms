@@ -1,8 +1,8 @@
 <template>
   <div class="users-page">
     <div class="users-page__header">
-      <h1 class="users-page__title">Users</h1>
-      <UButton icon="i-lucide-user-plus" @click="showNew = true">Invite user</UButton>
+      <h1 class="users-page__title">{{ $t('users.title') }}</h1>
+      <UButton icon="i-lucide-user-plus" @click="showNew = true">{{ $t('users.invite') }}</UButton>
     </div>
 
     <UTable :data="items" :columns="columns" :loading="pending">
@@ -28,38 +28,38 @@
     </UTable>
 
     <!-- Invite Modal -->
-    <UModal v-model:open="showNew" title="Invite user">
+    <UModal v-model:open="showNew" :title="$t('users.inviteTitle')">
       <template #body>
         <UForm :schema="inviteSchema" :state="inviteState" @submit="invite">
-          <UFormField label="Name" name="name">
-            <UInput v-model="inviteState.name" placeholder="Jane Smith" />
+          <UFormField :label="$t('users.name')" name="name">
+            <UInput v-model="inviteState.name" :placeholder="$t('users.namePlaceholder')" />
           </UFormField>
-          <UFormField label="Email" name="email">
-            <UInput v-model="inviteState.email" type="email" placeholder="jane@example.com" />
+          <UFormField :label="$t('users.email')" name="email">
+            <UInput v-model="inviteState.email" type="email" :placeholder="$t('users.emailPlaceholder')" />
           </UFormField>
-          <USelectMenu v-model="inviteState.roleIds" :items="roleOptions" multiple placeholder="Assign roles" />
+          <USelectMenu v-model="inviteState.roleIds" :items="roleOptions" multiple :placeholder="$t('users.assignRoles')" />
           <div class="users-page__modal-actions">
-            <UButton type="submit" :loading="inviting">Invite</UButton>
-            <UButton variant="ghost" type="button" @click="showNew = false">Cancel</UButton>
+            <UButton type="submit" :loading="inviting">{{ $t('common.invite') }}</UButton>
+            <UButton variant="ghost" type="button" @click="showNew = false">{{ $t('entries.cancel') }}</UButton>
           </div>
         </UForm>
       </template>
     </UModal>
 
     <!-- Edit Modal -->
-    <UModal v-model:open="editOpen" title="Edit user">
+    <UModal v-model:open="editOpen" :title="$t('users.editTitle')">
       <template #body>
         <UForm v-if="editTarget" :state="editTarget" @submit="saveEdit">
-          <UFormField label="Name">
+          <UFormField :label="$t('users.name')">
             <UInput v-model="editTarget.name" />
           </UFormField>
-          <UFormField label="Status">
+          <UFormField :label="$t('table.status')">
             <USelect v-model="editTarget.status"
-              :items="[{ label: 'Active', value: 'ACTIVE' }, { label: 'Inactive', value: 'INACTIVE' }]" />
+              :items="[{ label: t('users.statusActive'), value: 'ACTIVE' }, { label: t('users.statusInactive'), value: 'INACTIVE' }]" />
           </UFormField>
           <div class="users-page__modal-actions">
-            <UButton type="submit" :loading="editSaving">Save</UButton>
-            <UButton variant="ghost" @click="editOpen = false">Cancel</UButton>
+            <UButton type="submit" :loading="editSaving">{{ $t('common.save') }}</UButton>
+            <UButton variant="ghost" @click="editOpen = false">{{ $t('entries.cancel') }}</UButton>
           </div>
         </UForm>
       </template>
@@ -68,9 +68,9 @@
 </template>
 
 <script lang="ts" setup>
-import { z } from 'zod'
-
 definePageMeta({ middleware: 'auth' })
+
+const { t } = useI18n()
 
 const { data, pending, refresh } = await useFetch('/api/users')
 const items = computed(() => (data.value as any)?.items ?? [])
@@ -78,57 +78,17 @@ const items = computed(() => (data.value as any)?.items ?? [])
 const { data: rolesData } = await useFetch('/api/roles')
 const roleOptions = computed(() => (rolesData.value as any[])?.map(r => ({ label: r.name, value: r.id })) ?? [])
 
-const showNew = ref(false)
-const inviting = ref(false)
-const toast = useToast()
+const {
+  showNew, inviting, inviteSchema, inviteState, invite,
+  editOpen, editTarget, editSaving, editUser, saveEdit,
+} = useUserCrud(refresh)
 
-const inviteSchema = z.object({
-  name: z.string().min(1),
-  email: z.string().email(),
-})
-const inviteState = reactive({ name: '', email: '', roleIds: [] as string[] })
-
-async function invite() {
-  inviting.value = true
-  try {
-    await $fetch('/api/users', { method: 'POST', body: inviteState })
-    toast.add({ title: 'User invited', color: 'success' })
-    showNew.value = false
-    Object.assign(inviteState, { name: '', email: '', roleIds: [] })
-    refresh()
-  }
-  catch (e: any) {
-    toast.add({ title: 'Error', description: e.data?.message, color: 'error' })
-  }
-  finally { inviting.value = false }
-}
-
-const editOpen = ref(false)
-const editTarget = ref<any>(null)
-const editSaving = ref(false)
-
-function editUser(u: any) {
-  editTarget.value = { ...u }
-  editOpen.value = true
-}
-
-async function saveEdit() {
-  editSaving.value = true
-  try {
-    await $fetch(`/api/users/${editTarget.value.id}`, { method: 'PATCH', body: { name: editTarget.value.name, status: editTarget.value.status } })
-    toast.add({ title: 'User updated', color: 'success' })
-    editOpen.value = false
-    refresh()
-  }
-  finally { editSaving.value = false }
-}
-
-const columns = [
-  { accessorKey: 'name', header: 'User' },
-  { accessorKey: 'roles', header: 'Roles' },
-  { accessorKey: 'status', header: 'Status' },
+const columns = computed(() => [
+  { accessorKey: 'name', header: t('table.user') },
+  { accessorKey: 'roles', header: t('table.roles') },
+  { accessorKey: 'status', header: t('table.status') },
   { accessorKey: 'actions', header: '' },
-]
+])
 </script>
 
 <style lang="scss" scoped>

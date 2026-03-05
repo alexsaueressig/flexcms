@@ -2,26 +2,26 @@
   <div>
     <NuxtLayout name="auth">
       <div class="verify-page">
-        <h1 class="verify-page__title">Check your email</h1>
+        <h1 class="verify-page__title">{{ $t('auth.checkEmail') }}</h1>
         <p class="verify-page__sub">
-          We sent a 6-digit code to <strong>{{ email }}</strong>
+          {{ $t('auth.codeSentTo') }} <strong>{{ email }}</strong>
         </p>
 
         <p v-if="devOtp" class="verify-page__dev-otp">DEV — OTP: <strong>{{ devOtp }}</strong></p>
 
         <UForm :schema="schema" :state="state" @submit="submit">
-          <UFormField label="Sign-in code" name="code">
+          <UFormField :label="$t('auth.signInCode')" name="code">
             <UInput v-model="state.code" placeholder="000000" maxlength="6" inputmode="numeric"
               autocomplete="one-time-code" autofocus size="lg" class="verify-page__input" />
           </UFormField>
 
           <UButton type="submit" :loading="pending" class="verify-page__btn" size="lg" block>
-            Verify code
+            {{ $t('auth.verifyCode') }}
           </UButton>
         </UForm>
 
         <UButton variant="ghost" color="neutral" size="sm" class="verify-page__back" @click="$router.back()">
-          ← Use a different email
+          ← {{ $t('auth.differentEmail') }}
         </UButton>
       </div>
     </NuxtLayout>
@@ -41,7 +41,8 @@ const auth = useAuthStore()
 const pending = ref(false)
 const toast = useToast()
 
-const schema = z.object({ code: z.string().length(6, 'Code must be 6 digits') })
+const { t } = useI18n()
+const schema = computed(() => z.object({ code: z.string().length(6, t('auth.errors.codeLength')) }))
 const state = reactive({ code: '' })
 
 async function submit() {
@@ -52,10 +53,11 @@ async function submit() {
       body: { email: email.value, code: state.code },
     })
     await auth.fetchMe()
-    await navigateTo('/en')
+    const { locale } = useI18n()
+    await navigateTo(`/${locale.value}`)
   }
   catch (e: any) {
-    toast.add({ title: 'Invalid code', description: 'The code is incorrect or expired.', color: 'error' })
+    toast.add({ title: t('auth.errors.invalidCodeTitle'), description: t('auth.errors.invalidCodeDesc'), color: 'error' })
   }
   finally { pending.value = false }
 }

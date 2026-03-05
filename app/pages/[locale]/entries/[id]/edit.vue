@@ -13,38 +13,38 @@
                         {{ entry.title }}
                     </NuxtLink>
                     <UIcon name="i-lucide-chevron-right" class="entry-edit__bc-sep" />
-                    <span>Edit fields</span>
+                    <span>{{ $t('entries.editFields') }}</span>
                 </div>
 
                 <div class="entry-edit__actions">
                     <UButton v-if="fieldSchema?.fields?.length" icon="i-lucide-wand-2" variant="outline" color="neutral"
                         size="sm" :loading="magicLoading" @click="magicPopulate">
-                        Magic populate
+                        {{ $t('entries.magicPopulate') }}
                     </UButton>
-                    <UButton icon="i-lucide-save" size="sm" :loading="saving" @click="save">Save</UButton>
+                    <UButton icon="i-lucide-save" size="sm" :loading="saving" @click="save">{{ $t('entries.save') }}</UButton>
                 </div>
             </div>
 
             <!-- Fields -->
             <div v-if="!fieldSchema" class="entry-edit__empty">
                 <UIcon name="i-lucide-layout-template" />
-                <p>No field schema defined on the parent entry.</p>
+                <p>{{ $t('blueprint.noSchema') }}</p>
                 <UButton v-if="entry.parent" icon="i-lucide-external-link" size="sm" variant="outline"
                     :to="`/${locale}/entries/${entry.parent.id}`">
-                    Go to parent blueprint
+                    {{ $t('blueprint.goToParent') }}
                 </UButton>
             </div>
 
             <div v-else-if="!fieldSchema.fields?.length" class="entry-edit__empty">
                 <UIcon name="i-lucide-layout-template" />
-                <p>The parent blueprint has no fields yet.</p>
+                <p>{{ $t('blueprint.noSchemaFields') }}</p>
             </div>
 
             <EntryForm v-else :fields="fieldSchema.fields" :values="fieldValues" :locale="locale"
                 @update:values="fieldValues = $event" />
         </template>
 
-        <div v-else class="entry-edit__empty">Entry not found.</div>
+        <div v-else class="entry-edit__empty">{{ $t('entries.notFound') }}</div>
     </div>
 </template>
 
@@ -53,6 +53,7 @@ import { useMagicPopulate } from '~/composables/useMagicPopulate'
 
 definePageMeta({ middleware: 'auth' })
 
+const { t } = useI18n()
 const route = useRoute()
 const locale = computed(() => String(route.params.locale))
 const id = computed(() => String(route.params.id))
@@ -75,9 +76,9 @@ async function save() {
             method: 'PUT',
             body: { localeCode: locale.value, values: fieldValues.value },
         })
-        toast.add({ title: 'Saved', color: 'success' })
+        toast.add({ title: t('entries.saved'), color: 'success' })
     }
-    catch { toast.add({ title: 'Save failed', color: 'error' }) }
+    catch { toast.add({ title: t('entries.saveFailed'), color: 'error' }) }
     finally { saving.value = false }
 }
 

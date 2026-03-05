@@ -3,11 +3,11 @@
         <UIcon name="i-lucide-grip-vertical" class="blueprint-field-row__handle" />
         <div class="blueprint-field-row__body">
             <div class="blueprint-field-row__inputs">
-                <UInput v-model="local.label" placeholder="Label" class="blueprint-field-row__label" @input="autoKey" />
-                <UInput v-model="local.key" placeholder="key" :ui="{ base: 'font-mono text-sm' }"
+                <UInput v-model="local.label" :placeholder="$t('blueprint.fieldLabel')" class="blueprint-field-row__label" @input="autoKey" />
+                <UInput v-model="local.key" :placeholder="$t('blueprint.fieldKey')" :ui="{ base: 'font-mono text-sm' }"
                     class="blueprint-field-row__key" />
                 <USelect v-model="local.type" :items="typeOptions" class="blueprint-field-row__type" />
-                <UTooltip text="Required">
+                <UTooltip :text="$t('blueprint.fieldRequired')">
                     <UCheckbox v-model="local.isRequired" />
                 </UTooltip>
                 <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error" @click="$emit('remove')" />

@@ -7,7 +7,7 @@
     <div class="app-header__center">
       <UButton icon="i-lucide-search" variant="outline" color="neutral" class="app-header__search-trigger"
         @click="uiStore.openSearch()">
-        <span class="app-header__search-text">Search…</span>
+        <span class="app-header__search-text">{{ $t('search.placeholder') }}</span>
         <UKbd value="⌘K" class="ml-auto" />
       </UButton>
     </div>
@@ -28,6 +28,7 @@
 import { useUiStore } from '~/stores/ui'
 import { useAuthStore } from '~/stores/auth'
 
+const { t } = useI18n()
 const uiStore = useUiStore()
 const auth = useAuthStore()
 
@@ -37,7 +38,7 @@ const userMenuItems = computed(() => [
     disabled: true,
   }],
   [{
-    label: 'Sign out',
+    label: t('nav.logout'),
     icon: 'i-lucide-log-out',
     onSelect: () => auth.logout(),
   }],
