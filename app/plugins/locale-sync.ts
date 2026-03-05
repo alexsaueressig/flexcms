@@ -15,7 +15,7 @@ export default defineNuxtPlugin(() => {
       if (!code) return
       const supported = (i18n as any).availableLocales as string[]
       if (supported.includes(code)) {
-        ;(i18n as any).locale.value = code
+        ; (i18n as any).locale.value = code
         uiStore.activeLocale = code
       }
     },
