@@ -1,24 +1,13 @@
 import { useUiStore } from '~/stores/ui'
 
 /**
- * Syncs the [locale] route param with $i18n.locale and uiStore.activeLocale,
- * so that all $t() calls and sidebar navigation reflect the current URL locale.
+ * Keeps uiStore.activeLocale in sync with the i18n locale managed by @nuxtjs/i18n.
  */
 export default defineNuxtPlugin(() => {
-  const route = useRoute()
-  const i18n = useNuxtApp().$i18n
+  const { locale } = useNuxtApp().$i18n as any
   const uiStore = useUiStore()
 
-  watch(
-    () => route.params.locale as string | undefined,
-    (code) => {
-      if (!code) return
-      const supported = (i18n as any).availableLocales as string[]
-      if (supported.includes(code)) {
-        ; (i18n as any).locale.value = code
-        uiStore.activeLocale = code
-      }
-    },
-    { immediate: true },
-  )
+  watch(locale, (code: string) => {
+    uiStore.activeLocale = code
+  }, { immediate: true })
 })

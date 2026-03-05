@@ -9,7 +9,7 @@ interface FieldValue {
   valueMedia?: string | null
 }
 
-export function useMagicPopulate(entryId: string, localeCode: string) {
+export function useMagicPopulate(entryId: string, localeCode: Ref<string> | string) {
   const loading = ref(false)
 
   async function populate(fields: BlueprintField[], existingValues: FieldValue[]) {
@@ -68,7 +68,7 @@ export function useMagicPopulate(entryId: string, localeCode: string) {
     try {
       await $fetch(`/api/entries/${entryId}/values`, {
         method: 'PUT',
-        body: { localeCode, values },
+        body: { localeCode: toValue(localeCode), values },
       })
     }
     finally {

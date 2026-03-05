@@ -1,6 +1,6 @@
 <template>
   <div class="tree-node">
-    <NuxtLink :to="`/${locale}/entries/${entry.id}`" class="tree-node__row" active-class="tree-node__row--active">
+    <NuxtLink :to="localePath(`/entries/${entry.id}`)" class="tree-node__row" active-class="tree-node__row--active">
       <UButton v-if="entry._count && entry._count.children > 0"
         :icon="isExpanded ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'" variant="ghost" color="neutral"
         size="2xs" class="tree-node__chevron" @click.prevent="toggle" />
@@ -36,7 +36,8 @@ const props = defineProps<{
 
 const uiStore = useUiStore()
 const entriesStore = useEntriesStore()
-const locale = computed(() => uiStore.activeLocale)
+const { locale } = useI18n()
+const localePath = useLocalePath()
 const isExpanded = computed(() => entriesStore.isExpanded(props.entry.id))
 const children = ref<any[]>([])
 const loading = ref(false)
@@ -46,7 +47,7 @@ async function loadChildren() {
   loading.value = true
   try {
     const data = await $fetch<{ items: any[] }>(`/api/entries/${props.entry.id}/children`, {
-      params: { locale: locale.value, limit: 100 },
+      params: { locale: locale.value as string, limit: 100 },
     })
     children.value = data.items
   }

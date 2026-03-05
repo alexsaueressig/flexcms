@@ -13,6 +13,18 @@
     </div>
 
     <div class="app-header__right">
+      <div class="app-header__locales">
+        <NuxtLink
+          v-for="loc in localeList"
+          :key="loc.code"
+          :to="switchLocalePath(loc.code)"
+          class="app-header__locale-btn"
+          :class="{ 'app-header__locale-btn--active': locale === loc.code }"
+        >
+          {{ localeToFlag(loc.language) }}
+          <span class="app-header__locale-code">{{ loc.code.toUpperCase() }}</span>
+        </NuxtLink>
+      </div>
       <UColorModeButton />
       <UDropdownMenu :items="userMenuItems">
         <UButton variant="ghost" color="neutral" size="sm">
@@ -28,9 +40,12 @@
 import { useUiStore } from '~/stores/ui'
 import { useAuthStore } from '~/stores/auth'
 
-const { t } = useI18n()
+const { t, locale, locales } = useI18n()
+const switchLocalePath = useSwitchLocalePath()
 const uiStore = useUiStore()
 const auth = useAuthStore()
+
+const localeList = computed(() => (locales.value as any[]).filter(l => typeof l === 'object') as { code: string; language: string; name: string }[])
 
 const userMenuItems = computed(() => [
   [{
@@ -97,6 +112,44 @@ onMounted(() => {
     align-items: center;
     gap: 0.5rem;
     margin-left: auto;
+  }
+
+  &__locales {
+    display: flex;
+    align-items: center;
+    gap: 0.125rem;
+    padding-right: 0.25rem;
+    border-right: 1px solid var(--ui-border);
+    margin-right: 0.25rem;
+  }
+
+  &__locale-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    text-decoration: none;
+    color: inherit;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    opacity: 0.5;
+    transition: opacity 0.1s, background 0.1s;
+
+    &:hover {
+      opacity: 0.8;
+      background: var(--ui-bg-muted);
+    }
+
+    &--active {
+      opacity: 1;
+      background: var(--ui-bg-elevated);
+    }
+  }
+
+  &__locale-code {
+    font-size: 0.75rem;
+    font-weight: 600;
   }
 
   &__user-name {

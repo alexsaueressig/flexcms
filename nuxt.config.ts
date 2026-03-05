@@ -21,7 +21,7 @@ export default defineNuxtConfig({
     // Supported locales are loaded at runtime from the DB (see server/utils/locales.ts)
     // ---------------------------------------------------------------------------
     i18n: {
-        strategy: 'no_prefix',
+        strategy: 'prefix',
         defaultLocale: 'en',
         locales: [
             { code: 'br', language: 'pt-BR', name: 'Português (BR)' },

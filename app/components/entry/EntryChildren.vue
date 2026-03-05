@@ -17,7 +17,7 @@
 
     <UTable :data="items" :columns="columns" :loading="pending">
       <template #title-cell="{ row }">
-        <NuxtLink :to="`/${locale}/entries/${row.original.id}`" class="entry-children__link">
+        <NuxtLink :to="localePath(`/entries/${row.original.id}`)" class="entry-children__link">
           {{ row.original.title }}
         </NuxtLink>
       </template>
@@ -53,6 +53,7 @@
 const props = defineProps<{ entryId: string; locale: string; blueprint?: any }>()
 defineEmits<{ 'open-blueprint': [] }>()
 const { t } = useI18n()
+const localePath = useLocalePath()
 const search = ref('')
 const page = ref(1)
 const limit = 25

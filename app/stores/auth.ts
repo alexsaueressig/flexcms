@@ -32,7 +32,8 @@ export const useAuthStore = defineStore('auth', () => {
   async function logout() {
     await $fetch('/api/auth/logout', { method: 'POST' })
     user.value = null
-    await navigateTo('/auth/login')
+    const { locale } = (useNuxtApp().$i18n as any)
+    await navigateTo(`/${(locale as Ref<string>).value}/auth/login`)
   }
 
   function hasRole(roleName: string): boolean {

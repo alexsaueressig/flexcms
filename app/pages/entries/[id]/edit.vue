@@ -8,7 +8,7 @@
             <!-- Header -->
             <div class="entry-edit__header">
                 <div class="entry-edit__breadcrumb">
-                    <NuxtLink :to="`/${locale}/entries/${id}`" class="entry-edit__bc-link">
+                    <NuxtLink :to="localePath(`/entries/${id}`)" class="entry-edit__bc-link">
                         <UIcon name="i-lucide-arrow-left" />
                         {{ entry.title }}
                     </NuxtLink>
@@ -17,11 +17,13 @@
                 </div>
 
                 <div class="entry-edit__actions">
+                    <EntryContentLocaleSwitcher v-model="contentLocale" :locales="dbLocales" />
                     <UButton v-if="fieldSchema?.fields?.length" icon="i-lucide-wand-2" variant="outline" color="neutral"
                         size="sm" :loading="magicLoading" @click="magicPopulate">
                         {{ $t('entries.magicPopulate') }}
                     </UButton>
-                    <UButton icon="i-lucide-save" size="sm" :loading="saving" @click="save">{{ $t('entries.save') }}</UButton>
+                    <UButton icon="i-lucide-save" size="sm" :loading="saving" @click="save">{{ $t('entries.save') }}
+                    </UButton>
                 </div>
             </div>
 
@@ -30,7 +32,7 @@
                 <UIcon name="i-lucide-layout-template" />
                 <p>{{ $t('blueprint.noSchema') }}</p>
                 <UButton v-if="entry.parent" icon="i-lucide-external-link" size="sm" variant="outline"
-                    :to="`/${locale}/entries/${entry.parent.id}`">
+                    :to="localePath(`/entries/${entry.parent.id}`)">
                     {{ $t('blueprint.goToParent') }}
                 </UButton>
             </div>
@@ -40,7 +42,7 @@
                 <p>{{ $t('blueprint.noSchemaFields') }}</p>
             </div>
 
-            <EntryForm v-else :fields="fieldSchema.fields" :values="fieldValues" :locale="locale"
+            <EntryForm v-else :fields="fieldSchema.fields" :values="fieldValues" :locale="contentLocale"
                 @update:values="fieldValues = $event" />
         </template>
 
@@ -54,19 +56,21 @@ import { useMagicPopulate } from '~/composables/useMagicPopulate'
 definePageMeta({ middleware: 'auth' })
 
 const { t } = useI18n()
+const localePath = useLocalePath()
 const route = useRoute()
-const locale = computed(() => String(route.params.locale))
 const id = computed(() => String(route.params.id))
 const saving = ref(false)
 const toast = useToast()
+
+const { contentLocale, locales: dbLocales } = useContentLocale()
 
 const { data, pending, refresh } = await useFetch(() => `/api/entries/${id.value}`)
 const entry = computed(() => data.value as any)
 const fieldSchema = computed(() => entry.value?.fieldSchema ?? null)
 
 const fieldValues = ref<any[]>([])
-watch(entry, (e) => {
-    if (e) fieldValues.value = e.fieldValues ?? []
+watch([entry, contentLocale], ([e]) => {
+    if (e) fieldValues.value = (e.fieldValues ?? []).filter((v: any) => v.localeCode === contentLocale.value)
 }, { immediate: true })
 
 async function save() {
@@ -74,7 +78,7 @@ async function save() {
     try {
         await $fetch(`/api/entries/${id.value}/values`, {
             method: 'PUT',
-            body: { localeCode: locale.value, values: fieldValues.value },
+            body: { localeCode: contentLocale.value, values: fieldValues.value },
         })
         toast.add({ title: t('entries.saved'), color: 'success' })
     }
@@ -82,7 +86,7 @@ async function save() {
     finally { saving.value = false }
 }
 
-const { loading: magicLoading, populate } = useMagicPopulate(id.value, locale.value)
+const { loading: magicLoading, populate } = useMagicPopulate(id.value, contentLocale)
 async function magicPopulate() {
     if (!fieldSchema.value?.fields) return
     await populate(fieldSchema.value.fields, fieldValues.value)
@@ -139,6 +143,7 @@ async function magicPopulate() {
         display: flex;
         align-items: center;
         gap: 0.5rem;
+        flex-wrap: wrap;
     }
 
     &__empty {

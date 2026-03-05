@@ -1,13 +1,14 @@
 import { useAuthStore } from '~/stores/auth'
 
 export default defineNuxtRouteMiddleware(async (to) => {
-  if (to.path.startsWith('/auth')) return
+  if (to.path.includes('/auth/')) return
 
   const auth = useAuthStore()
   if (!auth.isAuthenticated) {
     await auth.fetchMe()
   }
   if (!auth.isAuthenticated) {
-    return navigateTo('/auth/login')
+    const localePath = useLocalePath()
+    return navigateTo(localePath('/auth/login'))
   }
 })

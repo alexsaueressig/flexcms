@@ -74,6 +74,7 @@ export default defineI18nConfig(() => ({
                 newChildDescription: 'Preencha os detalhes para criar um novo conteúdo filho.',
                 searchChildren: 'Buscar filhos…',
                 createEntry: 'Criar conteúdo',
+                contentLocale: 'Idioma do conteúdo',
                 form: {
                     titleLabel: 'Título',
                     titlePlaceholder: 'Meu conteúdo',
@@ -275,6 +276,7 @@ export default defineI18nConfig(() => ({
                 newChildDescription: 'Fill in the details to create a new child entry.',
                 searchChildren: 'Search children…',
                 createEntry: 'Create entry',
+                contentLocale: 'Content language',
                 form: {
                     titleLabel: 'Title',
                     titlePlaceholder: 'My entry',
