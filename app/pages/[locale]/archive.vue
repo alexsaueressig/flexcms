@@ -12,6 +12,9 @@
       <template #archivedAt-cell="{ row }">
         {{ row.original.archivedAt ? new Date(row.original.archivedAt).toLocaleDateString() : '—' }}
       </template>
+      <template #authorName-cell="{ row }">
+        {{ row.original.authorName ?? '—' }}
+      </template>
       <template #actions-cell="{ row }">
         <div class="archive-page__actions">
           <UButton size="xs" variant="outline" @click="restoreTarget = row.original.id">Restore</UButton>
@@ -65,6 +68,7 @@ const items = computed(() => (data.value as any)?.items ?? [])
 const columns = [
   { accessorKey: 'title', header: 'Entry' },
   { accessorKey: 'archivedAt', header: 'Archived on' },
+  { accessorKey: 'authorName', header: 'Author' },
   { accessorKey: 'actions', header: '' },
 ]
 

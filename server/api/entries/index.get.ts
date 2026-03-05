@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
       : {}),
   }
 
-  const [items, total] = await Promise.all([
+  const [rawItems, total] = await Promise.all([
     db.entry.findMany({
       where,
       orderBy: { order: 'asc' },
@@ -33,12 +33,23 @@ export default defineEventHandler(async (event) => {
       take: query.limit,
       select: {
         id: true, slug: true, title: true, localeCode: true,
-        order: true, createdAt: true, updatedAt: true,
+        order: true, createdAt: true, updatedAt: true, archivedAt: true, createdBy: true,
         _count: { select: { children: { where: { isArchived: false } } } },
       },
     }),
     db.entry.count({ where }),
   ])
+
+  // Resolve author names for archived listings
+  let items: typeof rawItems & { authorName?: string | null }[] = rawItems as any
+  if (query.archived) {
+    const authorIds = [...new Set(rawItems.map(e => e.createdBy).filter(Boolean))] as string[]
+    const authors = authorIds.length
+      ? await db.user.findMany({ where: { id: { in: authorIds } }, select: { id: true, name: true } })
+      : []
+    const authorMap = Object.fromEntries(authors.map(u => [u.id, u.name]))
+    items = rawItems.map(e => ({ ...e, authorName: e.createdBy ? (authorMap[e.createdBy] ?? null) : null }))
+  }
 
   return { items, total, limit: query.limit, offset: query.offset }
 })
