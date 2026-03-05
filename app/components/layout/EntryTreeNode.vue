@@ -41,17 +41,28 @@ const isExpanded = computed(() => entriesStore.isExpanded(props.entry.id))
 const children = ref<any[]>([])
 const loading = ref(false)
 
+async function loadChildren() {
+  if (loading.value || children.value.length) return
+  loading.value = true
+  try {
+    const data = await $fetch<{ items: any[] }>(`/api/entries/${props.entry.id}/children`, {
+      params: { locale: locale.value, limit: 100 },
+    })
+    children.value = data.items
+  }
+  finally { loading.value = false }
+}
+
+onMounted(async () => {
+  if (isExpanded.value && props.entry._count?.children) {
+    await loadChildren()
+  }
+})
+
 async function toggle() {
   entriesStore.toggleExpand(props.entry.id)
   if (entriesStore.isExpanded(props.entry.id) && !children.value.length) {
-    loading.value = true
-    try {
-      const data = await $fetch<{ items: any[] }>(`/api/entries/${props.entry.id}/children`, {
-        params: { locale: locale.value, limit: 100 },
-      })
-      children.value = data.items
-    }
-    finally { loading.value = false }
+    await loadChildren()
   }
 }
 </script>
@@ -109,5 +120,9 @@ async function toggle() {
     opacity: 0.4;
     font-size: 0.75rem;
   }
+}
+
+.entry-tree-indent {
+  padding-left: 1rem;
 }
 </style>

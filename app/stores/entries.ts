@@ -16,8 +16,8 @@ export const useEntriesStore = defineStore('entries', () => {
   const cache = ref<Record<string, EntryNode>>({})
   // Which entry IDs have their children loaded
   const loadedChildren = ref<Set<string>>(new Set())
-  // Which tree nodes are expanded
-  const expanded = ref<Set<string>>(new Set())
+  // Which tree nodes are explicitly collapsed (all others are expanded by default)
+  const collapsed = ref<Set<string>>(new Set())
 
   function setEntry(entry: EntryNode) {
     cache.value[entry.id] = entry
@@ -28,16 +28,16 @@ export const useEntriesStore = defineStore('entries', () => {
   }
 
   function toggleExpand(id: string) {
-    if (expanded.value.has(id)) {
-      expanded.value.delete(id)
+    if (collapsed.value.has(id)) {
+      collapsed.value.delete(id)
     }
     else {
-      expanded.value.add(id)
+      collapsed.value.add(id)
     }
   }
 
   function isExpanded(id: string): boolean {
-    return expanded.value.has(id)
+    return !collapsed.value.has(id)
   }
 
   function invalidate(id: string) {
@@ -51,5 +51,5 @@ export const useEntriesStore = defineStore('entries', () => {
     treeVersion.value++
   }
 
-  return { cache, loadedChildren, expanded, treeVersion, setEntry, getEntry, toggleExpand, isExpanded, invalidate, refreshTree }
+  return { cache, loadedChildren, collapsed, treeVersion, setEntry, getEntry, toggleExpand, isExpanded, invalidate, refreshTree }
 })
