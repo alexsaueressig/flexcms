@@ -371,7 +371,20 @@ async function main() {
             description: 'Full access to everything. Cannot be deleted.',
             isSystem: true,
             permissions: {
-                create: [{ canView: true, canCreate: true, canEdit: true, canArchive: true }],
+                create: [{ canView: true, canCreate: true, canEdit: true, canPublish: true, canArchive: true }],
+            },
+        },
+    })
+
+    await prisma.role.upsert({
+        where: { name: 'Publisher' },
+        update: {},
+        create: {
+            name: 'Publisher',
+            description: 'Can create, edit, and publish entries but cannot archive.',
+            isSystem: true,
+            permissions: {
+                create: [{ canView: true, canCreate: true, canEdit: true, canPublish: true, canArchive: false }],
             },
         },
     })
@@ -381,10 +394,10 @@ async function main() {
         update: {},
         create: {
             name: 'Editor',
-            description: 'Can create and edit entries but cannot archive.',
+            description: 'Can create and edit entries but cannot publish or archive.',
             isSystem: true,
             permissions: {
-                create: [{ canView: true, canCreate: true, canEdit: true, canArchive: false }],
+                create: [{ canView: true, canCreate: true, canEdit: true, canPublish: false, canArchive: false }],
             },
         },
     })
@@ -397,11 +410,11 @@ async function main() {
             description: 'Read-only access to all entries.',
             isSystem: true,
             permissions: {
-                create: [{ canView: true, canCreate: false, canEdit: false, canArchive: false }],
+                create: [{ canView: true, canCreate: false, canEdit: false, canPublish: false, canArchive: false }],
             },
         },
     })
-    console.log('  ✓ System roles seeded (Super Admin, Editor, Viewer)')
+    console.log('  ✓ System roles seeded (Super Admin, Publisher, Editor, Viewer)')
 
     // 5. Initial super admin user
     const adminEmail = process.env.ADMIN_EMAIL ?? 'admin@snapcms.io'

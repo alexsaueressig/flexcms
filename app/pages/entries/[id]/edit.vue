@@ -22,6 +22,21 @@
                         size="sm" :loading="magicLoading" @click="magicPopulate">
                         {{ $t('entries.magicPopulate') }}
                     </UButton>
+
+                    <!-- Publish controls (only for users with canPublish) -->
+                    <template v-if="authStore.canPublish">
+                        <UBadge :color="statusBadgeColor" variant="subtle" size="sm" class="entry-edit__status-badge">
+                            <span class="entry-edit__status-dot" :class="`entry-edit__status-dot--${currentStatus}`" />
+                            {{ $t(`entries.status.${currentStatus}`) }}
+                        </UBadge>
+                        <UDropdownMenu :items="publishMenuItems">
+                            <UButton icon="i-lucide-globe" size="sm" variant="outline" color="neutral"
+                                :loading="publishing">
+                                {{ $t('entries.publish') }}
+                            </UButton>
+                        </UDropdownMenu>
+                    </template>
+
                     <UButton icon="i-lucide-save" size="sm" :loading="saving" @click="save">{{ $t('entries.save') }}
                     </UButton>
                 </div>
@@ -53,6 +68,7 @@
 
 <script lang="ts" setup>
 import { useMagicPopulate } from '~/composables/useMagicPopulate'
+import { useAuthStore } from '~/stores/auth'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -61,7 +77,9 @@ const localePath = useLocalePath()
 const route = useRoute()
 const id = computed(() => String(route.params.id))
 const saving = ref(false)
+const publishing = ref(false)
 const toast = useToast()
+const authStore = useAuthStore()
 
 const { contentLocale, locales: dbLocales } = useContentLocale()
 
@@ -74,7 +92,6 @@ const fieldRelations = ref<any[]>([])
 watch([entry, contentLocale], ([e]) => {
     if (e) {
         fieldValues.value = (e.fieldValues ?? []).filter((v: any) => v.localeCode === contentLocale.value)
-        // Group relationsFrom by blueprintFieldId
         const rels = e.relationsFrom ?? []
         const grouped = new Map<string, string[]>()
         for (const r of rels) {
@@ -87,6 +104,42 @@ watch([entry, contentLocale], ([e]) => {
         }))
     }
 }, { immediate: true })
+
+// Publish status for the current locale
+const currentLocaleRecord = computed(() =>
+    (entry.value?.locales ?? []).find((l: any) => l.localeCode === contentLocale.value),
+)
+const currentStatus = computed(() => currentLocaleRecord.value?.publishStatus?.toLowerCase() ?? 'draft')
+const statusBadgeColor = computed(() => {
+    if (currentStatus.value === 'published') return 'success'
+    if (currentStatus.value === 'scheduled') return 'info'
+    return 'neutral'
+})
+
+const publishMenuItems = computed(() => {
+    const items = []
+    if (currentStatus.value !== 'published') {
+        items.push({ label: t('entries.publishAction'), icon: 'i-lucide-send', onSelect: () => doPublish('publish') })
+    }
+    if (currentStatus.value === 'published' || currentStatus.value === 'scheduled') {
+        items.push({ label: t('entries.unpublishAction'), icon: 'i-lucide-eye-off', onSelect: () => doPublish('unpublish') })
+    }
+    return items
+})
+
+async function doPublish(action: 'publish' | 'unpublish') {
+    publishing.value = true
+    try {
+        await $fetch(`/api/entries/${id.value}/publish`, {
+            method: 'PATCH',
+            body: { localeCode: contentLocale.value, action },
+        })
+        toast.add({ title: action === 'publish' ? t('entries.published') : t('entries.unpublished'), color: 'success' })
+        await refresh()
+    }
+    catch { toast.add({ title: t('common.error'), color: 'error' }) }
+    finally { publishing.value = false }
+}
 
 async function save() {
     saving.value = true
@@ -159,6 +212,23 @@ async function magicPopulate() {
         align-items: center;
         gap: 0.5rem;
         flex-wrap: wrap;
+    }
+
+    &__status-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    &__status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        flex-shrink: 0;
+
+        &--draft     { background: var(--color-neutral-400); }
+        &--published { background: var(--color-success-500); }
+        &--scheduled { background: var(--color-info-500); }
     }
 
     &__empty {

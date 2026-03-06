@@ -17,6 +17,12 @@ enum UserStatus {
   INACTIVE
 }
 
+enum PublishStatus {
+  DRAFT
+  PUBLISHED
+  SCHEDULED
+}
+
 /// All supported dynamic field types. Their display metadata and
 /// config validation schemas are stored in FieldTypeDefinition.
 enum FieldType {
@@ -164,6 +170,7 @@ model Permission {
   canView    Boolean @default(false)
   canCreate  Boolean @default(false)
   canEdit    Boolean @default(false)
+  canPublish Boolean @default(false)
   canArchive Boolean @default(false)
 
   role  Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
@@ -196,10 +203,30 @@ model Entry {
   relationsTo   EntryRelation[] @relation("RelationTarget")
   permissions   Permission[]
   mediaRecords  MediaRecord[]
+  locales       EntryLocale[]
 
   @@unique([parentId, slug])
   @@index([parentId])
   @@index([isArchived])
+}
+
+// ─── Entry locale status (per-entry, per-locale publish state) ────────────────
+
+/// Tracks publish status independently per entry and locale.
+model EntryLocale {
+  id            String        @id @default(cuid())
+  entryId       String
+  localeCode    String
+  publishStatus PublishStatus @default(DRAFT)
+  /// For SCHEDULED entries: the future timestamp at which to auto-publish
+  publishAt     DateTime?
+  updatedAt     DateTime      @updatedAt
+
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, localeCode])
+  @@index([entryId])
+  @@index([publishStatus])
 }
 
 // ─── Blueprints (entry-scoped content schemas, stored in DB) ──────────────────

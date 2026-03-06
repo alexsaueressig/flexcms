@@ -22,7 +22,8 @@
                         <span>{{ $t('roles.globalPermission') }}</span>
                         <div class="roles-page__perm-flags">
                             <span>{{ $t('roles.view') }}</span><span>{{ $t('roles.create') }}</span><span>{{
-                                $t('roles.edit') }}</span><span>{{ $t('roles.archive') }}</span>
+                                $t('roles.edit') }}</span><span>{{ $t('roles.publish') }}</span><span>{{
+                                $t('roles.archive') }}</span>
                         </div>
                     </div>
                     <div class="roles-page__perm-row">
@@ -31,6 +32,7 @@
                             <UCheckbox v-model="rolePermMap[role.id].canView" @change="savePerms(role.id)" />
                             <UCheckbox v-model="rolePermMap[role.id].canCreate" @change="savePerms(role.id)" />
                             <UCheckbox v-model="rolePermMap[role.id].canEdit" @change="savePerms(role.id)" />
+                            <UCheckbox v-model="rolePermMap[role.id].canPublish" @change="savePerms(role.id)" />
                             <UCheckbox v-model="rolePermMap[role.id].canArchive" @change="savePerms(role.id)" />
                         </div>
                     </div>

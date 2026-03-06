@@ -9,13 +9,14 @@ type UserWithRoles = User & {
   })[]
 }
 
-type Action = 'view' | 'create' | 'edit' | 'archive'
+type Action = 'view' | 'create' | 'edit' | 'publish' | 'archive'
 
 function checkField(action: Action): keyof Permission {
   const map: Record<Action, keyof Permission> = {
     view: 'canView',
     create: 'canCreate',
     edit: 'canEdit',
+    publish: 'canPublish',
     archive: 'canArchive',
   }
   return map[action]

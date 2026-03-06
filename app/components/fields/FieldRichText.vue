@@ -29,7 +29,7 @@ const emit = defineEmits<{ 'update:modelValue': [v: string] }>()
 const editor = useEditor({
   content: (props.modelValue as string) ?? '',
   extensions: [
-    StarterKit,
+    StarterKit.configure({ link: false, underline: false }),
     Underline,
     Link.configure({ openOnClick: false }),
     Placeholder.configure({ placeholder: 'Start writing…' }),

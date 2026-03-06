@@ -7,6 +7,13 @@ export interface AuthUser {
   status: string
   lastLoginAt: string | null
   roles: { id: string; name: string }[]
+  permissions: {
+    canView: boolean
+    canCreate: boolean
+    canEdit: boolean
+    canPublish: boolean
+    canArchive: boolean
+  }
 }
 
 export const useAuthStore = defineStore('auth', () => {
@@ -42,6 +49,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const isSuperAdmin = computed(() => hasRole('Super Admin'))
+  const canPublish = computed(() => user.value?.permissions?.canPublish ?? false)
 
-  return { user, pending, isAuthenticated, isSuperAdmin, fetchMe, logout, hasRole }
+  return { user, pending, isAuthenticated, isSuperAdmin, canPublish, fetchMe, logout, hasRole }
 })

@@ -6,7 +6,7 @@ export function useRoleCrud(refreshFn: () => any) {
     const creating = ref(false)
     const newRole = reactive({ name: '', description: '' })
 
-    const rolePermMap = ref<Record<string, { canView: boolean; canCreate: boolean; canEdit: boolean; canArchive: boolean }>>({})
+    const rolePermMap = ref<Record<string, { canView: boolean; canCreate: boolean; canEdit: boolean; canPublish: boolean; canArchive: boolean }>>({})
 
     function syncPermMap(roles: any[]) {
         for (const role of roles) {
@@ -15,6 +15,7 @@ export function useRoleCrud(refreshFn: () => any) {
                 canView: globalPerm?.canView ?? false,
                 canCreate: globalPerm?.canCreate ?? false,
                 canEdit: globalPerm?.canEdit ?? false,
+                canPublish: globalPerm?.canPublish ?? false,
                 canArchive: globalPerm?.canArchive ?? false,
             }
         }

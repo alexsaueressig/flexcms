@@ -7,6 +7,7 @@ const permSchema = z.object({
   canView: z.boolean().default(false),
   canCreate: z.boolean().default(false),
   canEdit: z.boolean().default(false),
+  canPublish: z.boolean().default(false),
   canArchive: z.boolean().default(false),
 })
 
@@ -31,6 +32,7 @@ export default defineEventHandler(async (event) => {
           canView: p.canView,
           canCreate: p.canCreate,
           canEdit: p.canEdit,
+          canPublish: p.canPublish,
           canArchive: p.canArchive,
         },
       }),

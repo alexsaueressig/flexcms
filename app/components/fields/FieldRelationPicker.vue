@@ -1,5 +1,5 @@
 <template>
-    <UModal v-model:open="open" title="Link entry">
+    <UModal v-model:open="open" title="Link entry" description="Search and select an entry to link.">
         <template #body>
             <UInput v-model="search" icon="i-lucide-search" placeholder="Search entries…" />
             <ul class="relation-picker__list">

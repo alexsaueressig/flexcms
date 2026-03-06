@@ -13,5 +13,15 @@ export default defineEventHandler(async (event) => {
     name: ur.role.name,
   }))
 
-  return { id, email, name, status, lastLoginAt, roles }
+  // Aggregate global permissions across all roles
+  const allPerms = user.roles.flatMap(ur => ur.role.permissions.filter(p => !p.entryId))
+  const permissions = {
+    canView: allPerms.some(p => p.canView),
+    canCreate: allPerms.some(p => p.canCreate),
+    canEdit: allPerms.some(p => p.canEdit),
+    canPublish: allPerms.some(p => p.canPublish),
+    canArchive: allPerms.some(p => p.canArchive),
+  }
+
+  return { id, email, name, status, lastLoginAt, roles, permissions }
 })

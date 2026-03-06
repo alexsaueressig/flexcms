@@ -13,8 +13,8 @@
           :ui="{ base: 'font-mono text-sm' }" />
       </UFormField>
 
-      <EntryForm v-if="fields.length" :fields="fields" :values="fieldValues" :locale="contentLocale"
-        @update:values="fieldValues = $event" />
+      <EntryForm v-if="fields.length" :fields="fields" :values="fieldValues" :relations="relationValues" :locale="contentLocale"
+        @update:values="fieldValues = $event" @update:relations="relationValues = $event" />
 
       <div class="new-entry-form__actions">
         <UButton type="submit" :loading="pending">{{ entry ? $t('entries.save') : $t('entries.createEntry') }}</UButton>
@@ -45,6 +45,7 @@ const state = reactive({
   slug: props.entry?.slug ?? '',
 })
 const fieldValues = ref<any[]>([])
+const relationValues = ref<any[]>([])
 const pending = ref(false)
 const loadingEntry = ref(!!props.entry)
 const toast = useToast()
