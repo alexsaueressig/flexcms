@@ -151,13 +151,14 @@ Each field type is registered in the database with an icon, label, description, 
 
 ### 5.2 Role-Based Access Control (RBAC)
 
-**Three system roles** (cannot be deleted or renamed):
+**Four system roles** (cannot be deleted or renamed):
 
-| Role            | View | Create | Edit | Archive |
-| --------------- | ---- | ------ | ---- | ------- |
-| **Super Admin** | Yes  | Yes    | Yes  | Yes     |
-| **Editor**      | Yes  | Yes    | Yes  | No      |
-| **Viewer**      | Yes  | No     | No   | No      |
+| Role            | View | Create | Edit | Publish | Archive |
+| --------------- | ---- | ------ | ---- | ------- | ------- |
+| **Super Admin** | Yes  | Yes    | Yes  | Yes     | Yes     |
+| **Publisher**   | Yes  | Yes    | Yes  | Yes     | No      |
+| **Editor**      | Yes  | Yes    | Yes  | No      | No      |
+| **Viewer**      | Yes  | No     | No   | No      | No      |
 
 Custom roles can be created with any combination of permissions.
 

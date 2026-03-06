@@ -1,29 +1,25 @@
 <template>
-    <div>
-        <NuxtLayout name="auth">
-            <div class="login-page">
-                <h1 class="login-page__title">{{ $t('auth.login') }}</h1>
-                <p class="login-page__sub">{{ $t('auth.emailSubtitle') }}</p>
+    <div class="login-page">
+        <h1 class="login-page__title">{{ $t('auth.login') }}</h1>
+        <p class="login-page__sub">{{ $t('auth.emailSubtitle') }}</p>
 
-                <UForm :schema="schema" :state="state" @submit="submit">
-                    <UFormField :label="$t('auth.email')" name="email">
-                        <UInput v-model="state.email" type="email" placeholder="you@example.com" autocomplete="email"
-                            autofocus size="lg" class="login-page__input" />
-                    </UFormField>
+        <UForm :schema="schema" :state="state" @submit="submit">
+            <UFormField :label="$t('auth.email')" name="email">
+                <UInput v-model="state.email" type="email" placeholder="you@example.com" autocomplete="email"
+                    autofocus size="lg" class="login-page__input" />
+            </UFormField>
 
-                    <UButton type="submit" :loading="pending" class="login-page__btn" size="lg" block>
-                        {{ $t('auth.sendCode') }}
-                    </UButton>
-                </UForm>
-            </div>
-        </NuxtLayout>
+            <UButton type="submit" :loading="pending" class="login-page__btn" size="lg" block>
+                {{ $t('auth.sendCode') }}
+            </UButton>
+        </UForm>
     </div>
 </template>
 
 <script lang="ts" setup>
 import { z } from 'zod'
 
-definePageMeta({ layout: false })
+definePageMeta({ layout: 'auth' })
 
 const { t } = useI18n()
 const localePath = useLocalePath()

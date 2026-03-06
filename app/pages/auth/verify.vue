@@ -1,7 +1,5 @@
 <template>
-    <div>
-        <NuxtLayout name="auth">
-            <div class="verify-page">
+    <div class="verify-page">
                 <h1 class="verify-page__title">{{ $t('auth.checkEmail') }}</h1>
                 <p class="verify-page__sub">
                     {{ $t('auth.codeSentTo') }} <strong>{{ email }}</strong>
@@ -23,8 +21,6 @@
                 <UButton variant="ghost" color="neutral" size="sm" class="verify-page__back" @click="$router.back()">
                     ← {{ $t('auth.differentEmail') }}
                 </UButton>
-            </div>
-        </NuxtLayout>
     </div>
 </template>
 
@@ -32,7 +28,7 @@
 import { z } from 'zod'
 import { useAuthStore } from '~/stores/auth'
 
-definePageMeta({ layout: false })
+definePageMeta({ layout: 'auth' })
 
 const route = useRoute()
 const email = computed(() => String(route.query.email ?? ''))
@@ -45,6 +41,13 @@ const { t } = useI18n()
 const localePath = useLocalePath()
 const schema = computed(() => z.object({ code: z.string().length(6, t('auth.errors.codeLength')) }))
 const state = reactive({ code: '' })
+
+onMounted(() => {
+    if (devOtp.value) {
+        state.code = devOtp.value
+        submit()
+    }
+})
 
 async function submit() {
     pending.value = true

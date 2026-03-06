@@ -2,7 +2,7 @@ import type { H3Event } from 'h3'
 import { nanoid } from 'nanoid'
 import db from '../db/client'
 
-const COOKIE_NAME = 'snapcms_session'
+const COOKIE_NAME = 'cms_session'
 const SESSION_DAYS = 30
 
 export async function createSession(
@@ -59,7 +59,7 @@ export async function getSessionUser(token: string) {
 export async function deleteSession(event: H3Event) {
   const token = getCookie(event, COOKIE_NAME)
   if (token) {
-    await db.session.deleteMany({ where: { token } }).catch(() => {})
+    await db.session.deleteMany({ where: { token } }).catch(() => { })
     deleteCookie(event, COOKIE_NAME, { path: '/' })
   }
 }

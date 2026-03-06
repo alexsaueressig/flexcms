@@ -19,7 +19,11 @@ export default defineEventHandler(async (event) => {
 
   const code = generateOtp()
   await createOtpToken(user.id, code)
-  if (process.env.NODE_ENV !== 'development') await sendOtpEmail(email, code)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[DEV] OTP for ${email}: ${code}`)
+  } else {
+    await sendOtpEmail(email, code)
+  }
 
   return { ok: true, devOtp: process.env.NODE_ENV === 'development' ? code : null }
 })
