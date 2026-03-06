@@ -39,7 +39,11 @@
 
         <div class="entries-page__pagination">
             <span class="entries-page__total">{{ $t('entries.count', { count: total }) }}</span>
-            <UPagination v-model:page="page" :total="total" :items-per-page="limit" />
+            <div class="entries-page__pagination-controls">
+                <UPagination v-model:page="page" :total="total" :items-per-page="pageSize" />
+                <USelect v-model="selectedPageSize" :items="pageSizeOptions" size="sm"
+                    class="entries-page__page-size" />
+            </div>
         </div>
 
         <!-- Edit modal -->
@@ -63,17 +67,26 @@ const { t } = useI18n()
 const localePath = useLocalePath()
 const search = ref('')
 const page = ref(1)
-const limit = 25
 
-const offset = computed(() => (page.value - 1) * limit)
+const { pageSize, pageSizeOptions, setPageSize } = usePageSize()
+
+const selectedPageSize = computed({
+    get: () => pageSize.value,
+    set: (val: number) => {
+        page.value = 1
+        setPageSize(val)
+    },
+})
+
+const offset = computed(() => (page.value - 1) * pageSize.value)
 
 const { data, pending, refresh } = await useFetch('/api/entries', {
     params: computed(() => ({
-        limit,
+        limit: pageSize.value,
         offset: offset.value,
         search: search.value || undefined,
     })),
-    watch: [search, offset],
+    watch: [search, offset, pageSize],
 })
 
 const items = computed(() => data.value?.items ?? [])
@@ -142,6 +155,16 @@ const {
         display: flex;
         align-items: center;
         justify-content: space-between;
+    }
+
+    &__pagination-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    &__page-size {
+        width: 5rem;
     }
 
     &__total {

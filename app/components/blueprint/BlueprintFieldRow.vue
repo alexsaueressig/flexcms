@@ -37,8 +37,14 @@ const props = defineProps<{
 const emit = defineEmits<{ 'update:field': [f: Field]; remove: [] }>()
 
 const local = ref<Field>({ ...props.field })
-watch(() => props.field, v => { local.value = { ...v } }, { deep: true })
-watch(local, v => emit('update:field', { ...v }), { deep: true })
+
+watch(() => props.field, v => {
+  if (JSON.stringify(v) !== JSON.stringify(local.value)) {
+    local.value = { ...v, config: { ...v.config } }
+  }
+}, { deep: true })
+
+watch(local, v => emit('update:field', { ...v, config: { ...v.config } }), { deep: true })
 
 const needsConfig = computed(() =>
     ['SELECT_SINGLE', 'SELECT_MULTI', 'RELATION_ONE', 'RELATION_MANY', 'NUMBER', 'STRING'].includes(local.value.type),

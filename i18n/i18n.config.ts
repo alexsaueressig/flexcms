@@ -150,8 +150,7 @@ export default defineI18nConfig(() => ({
                 deleteTitle: 'Excluir permanentemente',
                 deleteDescription: 'Isso excluirá permanentemente o conteúdo e todos os seus filhos. Esta ação não pode ser desfeita.',
                 restored: 'Conteúdo restaurado',
-                notImplemented: 'Não implementado',
-                hardDeleteNote: 'Exclusão permanente é feita por um administrador de banco de dados.',
+                deleted: 'Conteúdo excluído permanentemente',
             },
             users: {
                 title: 'Usuários',
@@ -352,8 +351,7 @@ export default defineI18nConfig(() => ({
                 deleteTitle: 'Delete permanently',
                 deleteDescription: 'This will permanently delete the entry and all its children. This action cannot be undone.',
                 restored: 'Entry restored',
-                notImplemented: 'Not implemented',
-                hardDeleteNote: 'Hard delete is done by a DB admin.',
+                deleted: 'Entry permanently deleted',
             },
             users: {
                 title: 'Users',

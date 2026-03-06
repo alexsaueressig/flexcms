@@ -34,7 +34,11 @@
       </template>
     </UTable>
 
-    <UPagination v-model:page="page" :total="total" :items-per-page="limit" />
+    <div class="entry-children__pagination">
+      <UPagination v-model:page="page" :total="total" :items-per-page="pageSize" />
+      <USelect v-model="selectedPageSize" :items="pageSizeOptions" size="sm"
+        class="entry-children__page-size" />
+    </div>
 
     <!-- Edit modal -->
     <UModal v-model:open="showEdit" :title="$t('entries.editEntry')" :description="$t('entries.editDescription')">
@@ -57,13 +61,22 @@ const { t } = useI18n()
 const localePath = useLocalePath()
 const search = ref('')
 const page = ref(1)
-const limit = 25
 
-const offset = computed(() => (page.value - 1) * limit)
+const { pageSize, pageSizeOptions, setPageSize } = usePageSize()
+
+const selectedPageSize = computed({
+  get: () => pageSize.value,
+  set: (val: number) => {
+    page.value = 1
+    setPageSize(val)
+  },
+})
+
+const offset = computed(() => (page.value - 1) * pageSize.value)
 
 const { data, pending, refresh } = useFetch(() => `/api/entries/${props.entryId}/children`, {
-  params: computed(() => ({ limit, offset: offset.value, search: search.value || undefined })),
-  watch: [search, offset],
+  params: computed(() => ({ limit: pageSize.value, offset: offset.value, search: search.value || undefined })),
+  watch: [search, offset, pageSize],
 })
 
 const items = computed(() => (data.value as any)?.items ?? [])
@@ -121,6 +134,17 @@ const {
     align-items: center;
     gap: 0.25rem;
     justify-content: flex-end;
+  }
+
+  &__pagination {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    justify-content: flex-end;
+  }
+
+  &__page-size {
+    width: 5rem;
   }
 }
 </style>

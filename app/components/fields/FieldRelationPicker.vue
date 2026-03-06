@@ -13,13 +13,18 @@
 </template>
 
 <script lang="ts" setup>
+const props = defineProps<{ parentId?: string }>()
 defineEmits<{ select: [entry: any] }>()
 const open = defineModel<boolean>('open')
 const search = ref('')
 
 const { data } = useFetch('/api/search', {
-    params: computed(() => ({ q: search.value || '__all__', limit: 20 })),
-    watch: [search],
+    params: computed(() => ({
+        q: search.value || '',
+        limit: 20,
+        ...(props.parentId ? { parentId: props.parentId } : {}),
+    })),
+    watch: [search, () => props.parentId],
 })
 const searchResults = computed(() => (data.value as any[]) ?? [])
 </script>

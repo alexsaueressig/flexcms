@@ -13,7 +13,7 @@
       Link entry
     </UButton>
 
-    <FieldsFieldRelationPicker v-model:open="pickerOpen" @select="selectEntry" />
+    <FieldsFieldRelationPicker v-model:open="pickerOpen" :parent-id="field.config?.relatedBlueprintEntryId" @select="selectEntry" />
   </div>
 </template>
 
