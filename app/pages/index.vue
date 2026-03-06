@@ -5,7 +5,7 @@
             <UModal v-model:open="showNew" :title="$t('entries.new')" :description="$t('entries.newDescription')">
                 <UButton icon="i-lucide-plus">{{ $t('entries.new') }}</UButton>
                 <template #body>
-                    <EntryNewEntryForm :locale="locale" @created="onCreated" @cancel="showNew = false" />
+                    <EntryNewEntryForm @created="onCreated" @cancel="showNew = false" />
                 </template>
             </UModal>
         </div>
@@ -45,7 +45,7 @@
         <!-- Edit modal -->
         <UModal v-model:open="showEdit" :title="$t('entries.editEntry')" :description="$t('entries.editDescription')">
             <template #body>
-                <EntryNewEntryForm :key="editingEntry?.id" :locale="locale" :entry="editingEntry" @updated="onUpdated"
+                <EntryNewEntryForm :key="editingEntry?.id" :entry="editingEntry" @updated="onUpdated"
                     @cancel="showEdit = false" />
             </template>
         </UModal>
@@ -59,7 +59,7 @@
 <script lang="ts" setup>
 definePageMeta({ middleware: 'auth' })
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const localePath = useLocalePath()
 const search = ref('')
 const page = ref(1)
@@ -69,12 +69,11 @@ const offset = computed(() => (page.value - 1) * limit)
 
 const { data, pending, refresh } = await useFetch('/api/entries', {
     params: computed(() => ({
-        locale: locale.value,
         limit,
         offset: offset.value,
         search: search.value || undefined,
     })),
-    watch: [locale, search, offset],
+    watch: [search, offset],
 })
 
 const items = computed(() => data.value?.items ?? [])

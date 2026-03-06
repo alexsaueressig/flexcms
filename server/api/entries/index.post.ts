@@ -6,7 +6,6 @@ const bodySchema = z.object({
   slug: z.string().min(1).regex(/^[a-z0-9-_]+$/),
   title: z.string().min(1),
   parentId: z.string().nullable().default(null),
-  localeCode: z.string().default('en'),
 })
 
 export default defineEventHandler(async (event) => {
@@ -17,7 +16,7 @@ export default defineEventHandler(async (event) => {
 
   // Auto-assign order at end of siblings
   const maxOrder = await db.entry.aggregate({
-    where: { parentId: body.parentId, localeCode: body.localeCode },
+    where: { parentId: body.parentId },
     _max: { order: true },
   })
 
@@ -26,7 +25,6 @@ export default defineEventHandler(async (event) => {
       slug: body.slug,
       title: body.title,
       parentId: body.parentId,
-      localeCode: body.localeCode,
       order: (maxOrder._max.order ?? -1) + 1,
       createdBy: user.id,
     },

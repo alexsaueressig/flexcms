@@ -30,8 +30,7 @@
             </div>
 
             <!-- Children list (default view) -->
-            <EntryChildren :entry-id="entry.id" :locale="locale" :blueprint="blueprint"
-                @open-blueprint="showBlueprint = true" />
+            <EntryChildren :entry-id="entry.id" :blueprint="blueprint" @open-blueprint="showBlueprint = true" />
 
             <!-- Blueprint modal -->
             <UModal v-model:open="showBlueprint" :title="$t('blueprint.title')"
@@ -52,7 +51,6 @@
 definePageMeta({ middleware: 'auth' })
 
 const route = useRoute()
-const { locale } = useI18n()
 const localePath = useLocalePath()
 const id = computed(() => String(route.params.id))
 const showBlueprint = ref(false)

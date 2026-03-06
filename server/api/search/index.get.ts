@@ -17,20 +17,22 @@ export default defineEventHandler(async (event) => {
   const entries = await db.entry.findMany({
     where: {
       isArchived: false,
-      ...(locale ? { localeCode: locale } : {}),
       OR: [
         { title: { contains: q, mode: 'insensitive' } },
         { slug: { contains: q, mode: 'insensitive' } },
         {
           fieldValues: {
-            some: { valueText: { contains: q, mode: 'insensitive' } },
+            some: {
+              valueText: { contains: q, mode: 'insensitive' },
+              ...(locale ? { localeCode: locale } : {}),
+            },
           },
         },
       ],
     },
     take: limit,
     select: {
-      id: true, title: true, slug: true, localeCode: true,
+      id: true, title: true, slug: true,
       parent: { select: { id: true, title: true, slug: true } },
     },
     orderBy: { updatedAt: 'desc' },

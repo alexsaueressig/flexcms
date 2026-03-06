@@ -52,7 +52,7 @@ import { useEntriesStore } from '~/stores/entries'
 
 definePageMeta({ middleware: 'auth' })
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const deleteTarget = ref<string | null>(null)
 const restoreTarget = ref<string | null>(null)
 const restoring = ref(false)
@@ -61,8 +61,7 @@ const toast = useToast()
 const entriesStore = useEntriesStore()
 
 const { data, pending, refresh } = await useFetch('/api/entries', {
-    params: computed(() => ({ locale: locale.value, archived: true, limit: 100 })),
-    watch: [locale],
+    params: computed(() => ({ archived: true, limit: 100 })),
 })
 
 const items = computed(() => (data.value as any)?.items ?? [])

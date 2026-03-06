@@ -12,14 +12,11 @@
 </template>
 
 <script lang="ts" setup>
-import { useUiStore } from '~/stores/ui'
 import { useEntriesStore } from '~/stores/entries'
 
 defineEmits<{ 'new-entry': [] }>()
 
-const uiStore = useUiStore()
 const entriesStore = useEntriesStore()
-const locale = computed(() => uiStore.activeLocale)
 const rootEntries = ref<any[]>([])
 const loading = ref(false)
 
@@ -27,7 +24,7 @@ async function loadRoots() {
     loading.value = true
     try {
         const data = await $fetch<{ items: any[] }>('/api/entries', {
-            params: { locale: locale.value, limit: 100 },
+            params: { limit: 100 },
         })
         rootEntries.value = data.items
     }

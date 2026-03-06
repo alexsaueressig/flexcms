@@ -4,7 +4,6 @@ interface EntryNode {
   id: string
   title: string
   slug: string
-  localeCode: string
   order: number
   isArchived: boolean
   _count?: { children: number }

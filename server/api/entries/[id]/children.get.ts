@@ -6,7 +6,6 @@ const querySchema = z.object({
   limit: z.coerce.number().min(1).max(200).default(25),
   offset: z.coerce.number().min(0).default(0),
   search: z.string().optional(),
-  locale: z.string().optional(),
   archived: z.coerce.boolean().default(false),
 })
 
@@ -20,7 +19,6 @@ export default defineEventHandler(async (event) => {
   const where = {
     parentId,
     isArchived: query.archived,
-    ...(query.locale ? { localeCode: query.locale } : {}),
     ...(query.search
       ? { title: { contains: query.search, mode: 'insensitive' as const } }
       : {}),
@@ -33,7 +31,7 @@ export default defineEventHandler(async (event) => {
       skip: query.offset,
       take: query.limit,
       select: {
-        id: true, slug: true, title: true, localeCode: true,
+        id: true, slug: true, title: true,
         order: true, isArchived: true, createdAt: true, updatedAt: true,
         _count: { select: { children: { where: { isArchived: false } } } },
       },

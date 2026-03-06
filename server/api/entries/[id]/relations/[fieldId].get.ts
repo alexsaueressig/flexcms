@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
     orderBy: { order: 'asc' },
     include: {
       targetEntry: {
-        select: { id: true, title: true, slug: true, localeCode: true },
+        select: { id: true, title: true, slug: true },
       },
     },
   })

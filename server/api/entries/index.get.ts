@@ -3,7 +3,6 @@ import db from '../../db/client'
 import { assertCan } from '../../utils/permissions'
 
 const querySchema = z.object({
-  locale: z.string().default('en'),
   limit: z.coerce.number().min(1).max(200).default(25),
   offset: z.coerce.number().min(0).default(0),
   search: z.string().optional(),
@@ -18,7 +17,6 @@ export default defineEventHandler(async (event) => {
 
   const where = {
     parentId: null,
-    localeCode: query.locale,
     isArchived: query.archived,
     ...(query.search
       ? { title: { contains: query.search, mode: 'insensitive' as const } }
@@ -32,7 +30,7 @@ export default defineEventHandler(async (event) => {
       skip: query.offset,
       take: query.limit,
       select: {
-        id: true, slug: true, title: true, localeCode: true,
+        id: true, slug: true, title: true,
         order: true, createdAt: true, updatedAt: true, archivedAt: true, createdBy: true,
         _count: { select: { children: { where: { isArchived: false } } } },
       },

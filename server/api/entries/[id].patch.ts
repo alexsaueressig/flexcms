@@ -6,7 +6,6 @@ const bodySchema = z.object({
   slug: z.string().min(1).regex(/^[a-z0-9-_]+$/).optional(),
   title: z.string().min(1).optional(),
   order: z.number().int().min(0).optional(),
-  localeCode: z.string().optional(),
 })
 
 export default defineEventHandler(async (event) => {

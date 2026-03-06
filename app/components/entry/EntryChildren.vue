@@ -1,15 +1,16 @@
 <template>
   <div class="entry-children">
     <div class="entry-children__header">
-      <UInput v-model="search" icon="i-lucide-search" :placeholder="$t('entries.searchChildren')" class="entry-children__search" />
+      <UInput v-model="search" icon="i-lucide-search" :placeholder="$t('entries.searchChildren')"
+        class="entry-children__search" />
       <div class="entry-children__header-actions">
         <UButton icon="i-lucide-settings" size="sm" variant="ghost" color="neutral" @click="$emit('open-blueprint')" />
         <UModal v-model:open="showNew" :title="$t('entries.newChildTitle')"
           :description="$t('entries.newChildDescription')">
           <UButton icon="i-lucide-plus" size="sm">{{ $t('entries.newChild') }}</UButton>
           <template #body>
-            <EntryNewEntryForm :locale="locale" :parent-id="entryId" :fields="blueprint?.fields ?? []"
-              @created="onCreate" @cancel="showNew = false" />
+            <EntryNewEntryForm :parent-id="entryId" :fields="blueprint?.fields ?? []" @created="onCreate"
+              @cancel="showNew = false" />
           </template>
         </UModal>
       </div>
@@ -38,19 +39,19 @@
     <!-- Edit modal -->
     <UModal v-model:open="showEdit" :title="$t('entries.editEntry')" :description="$t('entries.editDescription')">
       <template #body>
-        <EntryNewEntryForm :key="editingEntry?.id" :locale="locale" :parent-id="entryId"
-          :fields="blueprint?.fields ?? []" :entry="editingEntry" @updated="onUpdated" @cancel="showEdit = false" />
+        <EntryNewEntryForm :key="editingEntry?.id" :parent-id="entryId" :fields="blueprint?.fields ?? []"
+          :entry="editingEntry" @updated="onUpdated" @cancel="showEdit = false" />
       </template>
     </UModal>
 
     <!-- Delete confirmation modal -->
-    <EntryEntryDeleteConfirm v-model:open="showDelete" :title="deletingEntry?.title" :loading="deleting"
+    <EntryDeleteConfirm v-model:open="showDelete" :title="deletingEntry?.title" :loading="deleting"
       @confirm="doDelete" />
   </div>
 </template>
 
 <script lang="ts" setup>
-const props = defineProps<{ entryId: string; locale: string; blueprint?: any }>()
+const props = defineProps<{ entryId: string; blueprint?: any }>()
 defineEmits<{ 'open-blueprint': [] }>()
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -61,8 +62,8 @@ const limit = 25
 const offset = computed(() => (page.value - 1) * limit)
 
 const { data, pending, refresh } = useFetch(() => `/api/entries/${props.entryId}/children`, {
-  params: computed(() => ({ locale: props.locale, limit, offset: offset.value, search: search.value || undefined })),
-  watch: [() => props.locale, search, offset],
+  params: computed(() => ({ limit, offset: offset.value, search: search.value || undefined })),
+  watch: [search, offset],
 })
 
 const items = computed(() => (data.value as any)?.items ?? [])

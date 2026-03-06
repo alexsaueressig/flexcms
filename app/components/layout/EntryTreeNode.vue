@@ -21,7 +21,6 @@
 </template>
 
 <script lang="ts" setup>
-import { useUiStore } from '~/stores/ui'
 import { useEntriesStore } from '~/stores/entries'
 
 const props = defineProps<{
@@ -29,14 +28,11 @@ const props = defineProps<{
     id: string
     title: string
     slug: string
-    localeCode: string
     _count?: { children: number }
   }
 }>()
 
-const uiStore = useUiStore()
 const entriesStore = useEntriesStore()
-const { locale } = useI18n()
 const localePath = useLocalePath()
 const isExpanded = computed(() => entriesStore.isExpanded(props.entry.id))
 const children = ref<any[]>([])
@@ -47,7 +43,7 @@ async function loadChildren() {
   loading.value = true
   try {
     const data = await $fetch<{ items: any[] }>(`/api/entries/${props.entry.id}/children`, {
-      params: { locale: locale.value as string, limit: 100 },
+      params: { limit: 100 },
     })
     children.value = data.items
   }

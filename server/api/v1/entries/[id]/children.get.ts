@@ -14,7 +14,6 @@ export default defineEventHandler(async (event) => {
 
   const where = {
     parentId,
-    localeCode: locale,
     isArchived: false,
     ...(search ? { title: { contains: search, mode: 'insensitive' as const } } : {}),
   }

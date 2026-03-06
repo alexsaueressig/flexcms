@@ -9,10 +9,11 @@
       </UFormField>
 
       <UFormField :label="$t('entries.form.slug')" name="slug" required>
-        <UInput v-model="state.slug" :placeholder="$t('entries.form.slugPlaceholder')" :ui="{ base: 'font-mono text-sm' }" />
+        <UInput v-model="state.slug" :placeholder="$t('entries.form.slugPlaceholder')"
+          :ui="{ base: 'font-mono text-sm' }" />
       </UFormField>
 
-      <EntryForm v-if="fields.length" :fields="fields" :values="fieldValues" :locale="locale"
+      <EntryForm v-if="fields.length" :fields="fields" :values="fieldValues" :locale="contentLocale"
         @update:values="fieldValues = $event" />
 
       <div class="new-entry-form__actions">
@@ -27,7 +28,6 @@
 import { z } from 'zod'
 
 const props = defineProps<{
-  locale: string
   parentId?: string | null
   fields?: any[]
   entry?: { id: string; title: string; slug: string } | null
@@ -35,6 +35,7 @@ const props = defineProps<{
 const emit = defineEmits<{ created: [entry: any]; updated: [entry: any]; cancel: [] }>()
 
 const { t } = useI18n()
+const { contentLocale } = useContentLocale()
 const schema = computed(() => z.object({
   title: z.string().min(1, t('entries.form.required')),
   slug: z.string().min(1).regex(/^[a-z0-9-_]+$/, t('entries.form.slugFormat')),
@@ -76,7 +77,7 @@ async function submit() {
       if (fieldValues.value.length) {
         await $fetch(`/api/entries/${props.entry.id}/values`, {
           method: 'PUT',
-          body: { localeCode: props.locale, values: fieldValues.value },
+          body: { localeCode: contentLocale.value, values: fieldValues.value },
         })
       }
       emit('updated', updated)
@@ -84,12 +85,12 @@ async function submit() {
     else {
       const entry = await $fetch<{ id: string }>('/api/entries', {
         method: 'POST',
-        body: { title: state.title, slug: state.slug, localeCode: props.locale, parentId: props.parentId ?? null },
+        body: { title: state.title, slug: state.slug, parentId: props.parentId ?? null },
       })
       if (fieldValues.value.length) {
         await $fetch(`/api/entries/${entry.id}/values`, {
           method: 'PUT',
-          body: { localeCode: props.locale, values: fieldValues.value },
+          body: { localeCode: contentLocale.value, values: fieldValues.value },
         })
       }
       emit('created', entry)
