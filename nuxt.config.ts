@@ -27,7 +27,7 @@ export default defineNuxtConfig({
             { code: 'br', language: 'pt-BR', name: 'Português (BR)' },
             { code: 'en', language: 'en-US', name: 'English' },
         ],
-        vueI18n: './i18n/i18n.config.ts',
+        detectBrowserLanguage: true,
     },
 
     // ---------------------------------------------------------------------------
