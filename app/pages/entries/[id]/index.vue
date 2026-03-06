@@ -19,14 +19,7 @@
                     <span>{{ entry.title }}</span>
                 </div>
 
-                <div class="entry-detail__actions">
-                    <UButton v-if="fieldSchema?.fields?.length" icon="i-lucide-edit-3" variant="outline" color="neutral"
-                        size="sm" :to="localePath(`/entries/${id}/edit`)">
-                        {{ $t('entries.editFields') }}
-                    </UButton>
-                    <UButton icon="i-lucide-archive" variant="ghost" color="neutral" size="sm"
-                        :to="localePath('/archive')" />
-                </div>
+
             </div>
 
             <!-- Children list (default view) -->

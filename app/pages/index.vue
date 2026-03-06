@@ -30,7 +30,7 @@
             <template #actions-cell="{ row }">
                 <div class="entries-page__row-actions">
                     <UButton icon="i-lucide-edit-3" size="xs" variant="ghost" color="neutral"
-                        @click="openEdit(row.original)" />
+                        :to="localePath(`/entries/${row.original.id}/edit`)" />
                     <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error"
                         @click="confirmDelete(row.original)" />
                 </div>
@@ -45,14 +45,6 @@
                     class="entries-page__page-size" />
             </div>
         </div>
-
-        <!-- Edit modal -->
-        <UModal v-model:open="showEdit" :title="$t('entries.editEntry')" :description="$t('entries.editDescription')">
-            <template #body>
-                <EntryNewEntryForm :key="editingEntry?.id" :entry="editingEntry" @updated="onUpdated"
-                    @cancel="showEdit = false" />
-            </template>
-        </UModal>
 
         <!-- Delete confirmation -->
         <EntryDeleteConfirm v-model:open="showDelete" :title="deletingEntry?.title" :loading="deleting"
@@ -101,9 +93,9 @@ const columns = computed(() => [
 ])
 
 const {
-    showNew, showEdit, showDelete,
-    editingEntry, deletingEntry, deleting,
-    onCreated, openEdit, onUpdated, confirmDelete, doDelete,
+    showNew, showDelete,
+    deletingEntry, deleting,
+    onCreated, confirmDelete, doDelete,
 } = useEntryCrud(refresh)
 </script>
 

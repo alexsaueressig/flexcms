@@ -27,7 +27,8 @@
       </template>
       <template #actions-cell="{ row }">
         <div class="entry-children__row-actions">
-          <UButton icon="i-lucide-edit-3" size="xs" variant="ghost" color="neutral" @click="openEdit(row.original)" />
+          <UButton icon="i-lucide-edit-3" size="xs" variant="ghost" color="neutral"
+            :to="localePath(`/entries/${row.original.id}/edit`)" />
           <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error"
             @click="confirmDelete(row.original)" />
         </div>
@@ -39,14 +40,6 @@
       <USelect v-model="selectedPageSize" :items="pageSizeOptions" size="sm"
         class="entry-children__page-size" />
     </div>
-
-    <!-- Edit modal -->
-    <UModal v-model:open="showEdit" :title="$t('entries.editEntry')" :description="$t('entries.editDescription')">
-      <template #body>
-        <EntryNewEntryForm :key="editingEntry?.id" :parent-id="entryId" :fields="blueprint?.fields ?? []"
-          :entry="editingEntry" @updated="onUpdated" @cancel="showEdit = false" />
-      </template>
-    </UModal>
 
     <!-- Delete confirmation modal -->
     <EntryDeleteConfirm v-model:open="showDelete" :title="deletingEntry?.title" :loading="deleting"
@@ -90,9 +83,9 @@ const columns = computed(() => [
 ])
 
 const {
-  showNew, showEdit, showDelete,
-  editingEntry, deletingEntry, deleting,
-  onCreated: onCreate, openEdit, onUpdated, confirmDelete, doDelete,
+  showNew, showDelete,
+  deletingEntry, deleting,
+  onCreated: onCreate, confirmDelete, doDelete,
 } = useEntryCrud(refresh)
 </script>
 

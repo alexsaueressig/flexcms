@@ -18,24 +18,15 @@
 
                 <div class="entry-edit__actions">
                     <EntryContentLocaleSwitcher v-model="contentLocale" :locales="dbLocales" />
-                    <UButton v-if="fieldSchema?.fields?.length" icon="i-lucide-wand-2" variant="outline" color="neutral"
-                        size="sm" :loading="magicLoading" @click="magicPopulate">
-                        {{ $t('entries.magicPopulate') }}
-                    </UButton>
 
                     <!-- Publish controls (only for users with canPublish) -->
-                    <template v-if="authStore.canPublish">
-                        <UBadge :color="statusBadgeColor" variant="subtle" size="sm" class="entry-edit__status-badge">
+                    <UDropdownMenu v-if="authStore.canPublish" :items="publishMenuItems">
+                        <UButton size="sm" :color="statusBadgeColor" variant="subtle" :loading="publishing"
+                            trailing-icon="i-lucide-chevron-down" class="entry-edit__status-btn">
                             <span class="entry-edit__status-dot" :class="`entry-edit__status-dot--${currentStatus}`" />
                             {{ $t(`entries.status.${currentStatus}`) }}
-                        </UBadge>
-                        <UDropdownMenu :items="publishMenuItems">
-                            <UButton icon="i-lucide-globe" size="sm" variant="outline" color="neutral"
-                                :loading="publishing">
-                                {{ $t('entries.publish') }}
-                            </UButton>
-                        </UDropdownMenu>
-                    </template>
+                        </UButton>
+                    </UDropdownMenu>
 
                     <UButton icon="i-lucide-save" size="sm" :loading="saving" @click="save">{{ $t('entries.save') }}
                     </UButton>
@@ -67,7 +58,6 @@
 </template>
 
 <script lang="ts" setup>
-import { useMagicPopulate } from '~/composables/useMagicPopulate'
 import { useAuthStore } from '~/stores/auth'
 
 definePageMeta({ middleware: 'auth' })
@@ -154,12 +144,7 @@ async function save() {
     finally { saving.value = false }
 }
 
-const { loading: magicLoading, populate } = useMagicPopulate(id.value, contentLocale)
-async function magicPopulate() {
-    if (!fieldSchema.value?.fields) return
-    await populate(fieldSchema.value.fields, fieldValues.value)
-    await refresh()
-}
+
 </script>
 
 <style lang="scss" scoped>
@@ -214,10 +199,8 @@ async function magicPopulate() {
         flex-wrap: wrap;
     }
 
-    &__status-badge {
-        display: flex;
-        align-items: center;
-        gap: 0.375rem;
+    &__status-btn {
+        cursor: pointer;
     }
 
     &__status-dot {

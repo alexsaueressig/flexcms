@@ -51,12 +51,18 @@ const loadingEntry = ref(!!props.entry)
 const toast = useToast()
 const fields = computed(() => props.fields ?? [])
 
-// In edit mode, fetch full entry data to get fieldValues
+// In edit mode, fetch full entry data to get fieldValues and relationValues
 onMounted(async () => {
   if (!props.entry) return
   try {
     const data = await $fetch<any>(`/api/entries/${props.entry.id}`)
     fieldValues.value = data.fieldValues ?? []
+    const relMap: Record<string, string[]> = {}
+    for (const rel of data.relationsFrom ?? []) {
+      if (!relMap[rel.blueprintFieldId]) relMap[rel.blueprintFieldId] = []
+      relMap[rel.blueprintFieldId].push(rel.targetEntry.id)
+    }
+    relationValues.value = Object.entries(relMap).map(([blueprintFieldId, targetEntryIds]) => ({ blueprintFieldId, targetEntryIds }))
   }
   finally { loadingEntry.value = false }
 })
@@ -75,10 +81,10 @@ async function submit() {
         method: 'PATCH',
         body: { title: state.title, slug: state.slug },
       })
-      if (fieldValues.value.length) {
+      if (fieldValues.value.length || relationValues.value.length) {
         await $fetch(`/api/entries/${props.entry.id}/values`, {
           method: 'PUT',
-          body: { localeCode: contentLocale.value, values: fieldValues.value },
+          body: { localeCode: contentLocale.value, values: fieldValues.value, relations: relationValues.value },
         })
       }
       emit('updated', updated)
@@ -88,10 +94,10 @@ async function submit() {
         method: 'POST',
         body: { title: state.title, slug: state.slug, parentId: props.parentId ?? null },
       })
-      if (fieldValues.value.length) {
+      if (fieldValues.value.length || relationValues.value.length) {
         await $fetch(`/api/entries/${entry.id}/values`, {
           method: 'PUT',
-          body: { localeCode: contentLocale.value, values: fieldValues.value },
+          body: { localeCode: contentLocale.value, values: fieldValues.value, relations: relationValues.value },
         })
       }
       emit('created', entry)
