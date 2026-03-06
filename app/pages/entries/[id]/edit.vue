@@ -30,8 +30,18 @@
 
                     <UButton icon="i-lucide-save" size="sm" :loading="saving" @click="save">{{ $t('entries.save') }}
                     </UButton>
+                    <UButton icon="i-lucide-edit-3" size="sm" variant="outline" color="neutral" @click="showBlueprint = true">
+                        {{ $t('entries.editFields') }}
+                    </UButton>
                 </div>
             </div>
+
+            <!-- Blueprint modal -->
+            <UModal v-model:open="showBlueprint" :title="$t('blueprint.title')" :description="$t('blueprint.description')">
+                <template #body>
+                    <BlueprintEditor :entry-id="id" :existing="blueprint" @saved="onBlueprintSaved" />
+                </template>
+            </UModal>
 
             <!-- Fields -->
             <div v-if="!fieldSchema" class="entry-edit__empty">
@@ -68,6 +78,7 @@ const route = useRoute()
 const id = computed(() => String(route.params.id))
 const saving = ref(false)
 const publishing = ref(false)
+const showBlueprint = ref(false)
 const toast = useToast()
 const authStore = useAuthStore()
 
@@ -75,6 +86,7 @@ const { contentLocale, locales: dbLocales } = useContentLocale()
 
 const { data, pending, refresh } = await useFetch(() => `/api/entries/${id.value}`)
 const entry = computed(() => data.value as any)
+const blueprint = computed(() => entry.value?.blueprint ?? null)
 const fieldSchema = computed(() => entry.value?.fieldSchema ?? null)
 
 const fieldValues = ref<any[]>([])
@@ -129,6 +141,11 @@ async function doPublish(action: 'publish' | 'unpublish') {
     }
     catch { toast.add({ title: t('common.error'), color: 'error' }) }
     finally { publishing.value = false }
+}
+
+async function onBlueprintSaved() {
+    showBlueprint.value = false
+    await refresh()
 }
 
 async function save() {

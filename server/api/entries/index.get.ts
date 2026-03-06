@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
   const query = querySchema.parse(getQuery(event))
 
   const where = {
-    parentId: null,
+    ...(query.archived ? {} : { parentId: null }),
     isArchived: query.archived,
     ...(query.search
       ? { title: { contains: query.search, mode: 'insensitive' as const } }
