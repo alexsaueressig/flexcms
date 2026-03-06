@@ -5,6 +5,9 @@ Use Nuxt Content (LTS)
 Use NUxt UI
 Use TypeScript
 
+If better-sqlite3 fails to load after switching Node versions, rebuild it:
+cd node_modules/.pnpm/better-sqlite3@12.6.2/node_modules/better-sqlite3 && pnpm rebuild
+
 Use prefixed routes (/br, /en). Default is "en"
 No hardcoded localisations/translations. All translations should be in i18n.config.ts
 
@@ -23,3 +26,7 @@ Use viewTransition slide animations between pages
 
 IMAGES:
 You are allowed to search the internet for free images. Always download them, instead of referencing them on remote servers.
+
+If the app spec changes, update this file accordingly.
+
+If you encounter some difficult that took a lot o time to fix, document it in this document to avoid repeting the issue.

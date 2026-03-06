@@ -15,6 +15,10 @@ export default defineEventHandler(async (event) => {
       },
       blueprint: { include: { fields: { orderBy: { order: 'asc' } } } },
       fieldValues: true,
+      relationsFrom: {
+        orderBy: { order: 'asc' },
+        include: { targetEntry: { select: { id: true, title: true, slug: true } } },
+      },
       _count: { select: { children: { where: { isArchived: false } } } },
     },
   })

@@ -42,8 +42,8 @@ const pending = ref(false)
 const inputRef = ref<HTMLInputElement | null>(null)
 const locale = computed(() => String(route.params.locale || uiStore.activeLocale))
 
-const { pause, resume } = useThrottleFn(async () => {
-  if (query.value.length < 2) { results.value = []; return }
+const throttledSearch = useThrottleFn(async () => {
+  if (query.value.length < 2) { results.value = []; pending.value = false; return }
   pending.value = true
   try {
     results.value = await $fetch('/api/search', { params: { q: query.value, locale: locale.value } })
@@ -51,12 +51,13 @@ const { pause, resume } = useThrottleFn(async () => {
   finally { pending.value = false }
 }, 300)
 
-watch(query, () => resume())
+watch(query, () => throttledSearch())
 
 onMounted(() => nextTick(() => inputRef.value?.focus()))
 
 function go(entry: any) {
-  navigateTo(`/${locale.value}/entries/${entry.id}`)
+  const path = entry.blueprint ? `/entries/${entry.id}` : `/entries/${entry.id}/edit`
+  navigateTo(`/${locale.value}${path}`)
   uiStore.closeSearch()
 }
 </script>

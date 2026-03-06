@@ -20,7 +20,7 @@
 
 | Layer                | Technology                                         | Notes                                                      |
 | -------------------- | -------------------------------------------------- | ---------------------------------------------------------- |
-| Runtime              | Node.js 24                                         | Required minimum version                                   |
+| Runtime              | Node.js 24                                         | Required minimum version; use NVM to manage versions       |
 | Package Manager      | pnpm                                               | Workspace setup                                            |
 | Framework            | Nuxt 4 (LTS)                                       | Full-stack Vue 3 framework with SSR                        |
 | UI Library           | Nuxt UI                                            | Component library for forms, modals, tables, buttons, etc. |
@@ -141,8 +141,8 @@ Each field type is registered in the database with an icon, label, description, 
 
 1. User enters email on the login page
 2. System generates a **6-digit OTP code**, hashes it (SHA-256), and stores it with 15-minute expiry
-3. OTP is emailed to the user (in development mode, the code is returned in the response instead and shown in the console and in the interface)
-4. User enters the code on the verification page
+3. OTP is emailed to the user (in development mode, the code is returned in the response, shown in the console and in the interface, auto-filled on the verify page, and submitted automatically)
+4. User enters the code on the verification page (skipped in dev mode)
 5. On success, a **session** is created:
    - Token: random 48-character string
    - Stored in an HttpOnly cookie (`cms_session`)
@@ -196,7 +196,7 @@ The app has two layouts:
   - Global search trigger (Cmd+K / Ctrl+K shortcut)
   - Locale switcher (flag emoji + code for each locale)
   - Color mode toggle (light/dark)
-  - User menu dropdown (email shown, logout action)
+  - User menu dropdown (avatar + name shown, email inside menu, logout action)
 - **Main content area** fills the remaining space
 
 **Auth layout:** Centered card on a plain background (login/verify pages).
@@ -205,16 +205,16 @@ The app has two layouts:
 
 _All URLs below omit the locale prefix (e.g., `/en`, `/br`) for brevity._
 
-| Page               | URL                | Access        | Purpose                                                                                                                                                                                                                                          |
-| ------------------ | ------------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Login**          | /auth/login        | Public        | Enter email to request OTP                                                                                                                                                                                                                       |
-| **Verify**         | /auth/verify       | Public        | Enter 6-digit code                                                                                                                                                                                                                               |
-| **Entries** (Home) | /                  | Authenticated | Table of root entries with search, pagination (25/page), create/edit/delete modals                                                                                                                                                               |
+| Page               | URL                | Access        | Purpose                                                                                                                                                                                                                                                                                   |
+| ------------------ | ------------------ | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Login**          | /auth/login        | Public        | Enter email to request OTP                                                                                                                                                                                                                                                                |
+| **Verify**         | /auth/verify       | Public        | Enter 6-digit code                                                                                                                                                                                                                                                                        |
+| **Entries** (Home) | /                  | Authenticated | Table of root entries with search, pagination (25/page), create/edit/delete modals                                                                                                                                                                                                        |
 | **Entry Detail**   | /entries/[id]      | Authenticated | Breadcrumb trail, "Edit fields" button, children table with filters and configurable pagination, blueprint definition modal. **Only accessible for entries that have a blueprint** (i.e., entries that can have children). Entries without a blueprint redirect to the edit page instead. |
-| **Entry Editor**   | /entries/[id]/edit | Authenticated | Locale switcher, dynamic form with all blueprint fields, "Magic Populate" button (auto-fill with fake data), save button                                                                                                                         |
-| **Archive**        | /archive           | Authenticated | Archived entries table with restore action                                                                                                                                                                                                       |
-| **Users**          | /admin/users       | Super Admin   | User list with search, invite modal (name + email + roles), edit modal (name + status)                                                                                                                                                           |
-| **Roles**          | /admin/roles       | Super Admin   | Role cards with permission grids (view/create/edit/archive checkboxes), create/delete roles                                                                                                                                                      |
+| **Entry Editor**   | /entries/[id]/edit | Authenticated | Locale switcher, dynamic form with all blueprint fields, "Magic Populate" button (auto-fill with fake data), save button                                                                                                                                                                  |
+| **Archive**        | /archive           | Authenticated | Archived entries table with restore action                                                                                                                                                                                                                                                |
+| **Users**          | /admin/users       | Super Admin   | User list with search, invite modal (name + email + roles), edit modal (name + status)                                                                                                                                                                                                    |
+| **Roles**          | /admin/roles       | Super Admin   | Role cards with permission grids (view/create/edit/archive checkboxes), create/delete roles                                                                                                                                                                                               |
 
 ### 6.3 Page Transitions
 
@@ -264,12 +264,12 @@ This means leaf entries (those that are not meant to have children) skip the chi
 
 All entry tables (root listing, children listing, archive) support the following filters:
 
-| Filter              | Control            | Behavior                                                                                              |
-| ------------------- | ------------------ | ----------------------------------------------------------------------------------------------------- |
-| **Publish status**  | Multi-select chips | Filter by Draft, Published, or Scheduled (per current locale). All selected by default.               |
-| **Has blueprint**   | Toggle             | Show only entries that have a blueprint defined (container entries), or only leaf entries.             |
-| **Created date**    | Date range picker  | Filter entries created within a start/end date range.                                                 |
-| **Updated date**    | Date range picker  | Filter entries last updated within a start/end date range.                                            |
+| Filter             | Control            | Behavior                                                                                   |
+| ------------------ | ------------------ | ------------------------------------------------------------------------------------------ |
+| **Publish status** | Multi-select chips | Filter by Draft, Published, or Scheduled (per current locale). All selected by default.    |
+| **Has blueprint**  | Toggle             | Show only entries that have a blueprint defined (container entries), or only leaf entries. |
+| **Created date**   | Date range picker  | Filter entries created within a start/end date range.                                      |
+| **Updated date**   | Date range picker  | Filter entries last updated within a start/end date range.                                 |
 
 - Filters are displayed in a collapsible bar above the table, collapsed by default.
 - Active filters show a count badge on the filter toggle button.
@@ -502,3 +502,17 @@ On first setup, the seed script creates:
 - **Soft-delete** prevents accidental permanent data loss
 - **Self-protection** — users cannot deactivate or delete their own account
 - **System roles** are protected from modification or deletion
+
+---
+
+## 18. Local Development Setup
+
+1. **Install NVM** (Node Version Manager) — required to manage Node.js versions
+2. Install and use Node.js 24: `nvm install 24 && nvm use 24`
+3. Set Node 24 as default: `nvm alias default 24`
+4. Install dependencies: `pnpm install`
+5. If `better-sqlite3` fails to load after switching Node versions, rebuild it:
+   ```
+   cd node_modules/.pnpm/better-sqlite3@12.6.2/node_modules/better-sqlite3 && pnpm rebuild
+   ```
+6. Start the dev server: `pnpm dev`

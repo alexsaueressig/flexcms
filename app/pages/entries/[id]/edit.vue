@@ -42,8 +42,9 @@
                 <p>{{ $t('blueprint.noSchemaFields') }}</p>
             </div>
 
-            <EntryForm v-else :fields="fieldSchema.fields" :values="fieldValues" :locale="contentLocale"
-                @update:values="fieldValues = $event" />
+            <EntryForm v-else :fields="fieldSchema.fields" :values="fieldValues" :relations="fieldRelations"
+                :locale="contentLocale" @update:values="fieldValues = $event"
+                @update:relations="fieldRelations = $event" />
         </template>
 
         <div v-else class="entry-edit__empty">{{ $t('entries.notFound') }}</div>
@@ -69,8 +70,22 @@ const entry = computed(() => data.value as any)
 const fieldSchema = computed(() => entry.value?.fieldSchema ?? null)
 
 const fieldValues = ref<any[]>([])
+const fieldRelations = ref<any[]>([])
 watch([entry, contentLocale], ([e]) => {
-    if (e) fieldValues.value = (e.fieldValues ?? []).filter((v: any) => v.localeCode === contentLocale.value)
+    if (e) {
+        fieldValues.value = (e.fieldValues ?? []).filter((v: any) => v.localeCode === contentLocale.value)
+        // Group relationsFrom by blueprintFieldId
+        const rels = e.relationsFrom ?? []
+        const grouped = new Map<string, string[]>()
+        for (const r of rels) {
+            const ids = grouped.get(r.blueprintFieldId) ?? []
+            ids.push(r.targetEntryId)
+            grouped.set(r.blueprintFieldId, ids)
+        }
+        fieldRelations.value = [...grouped.entries()].map(([blueprintFieldId, targetEntryIds]) => ({
+            blueprintFieldId, targetEntryIds,
+        }))
+    }
 }, { immediate: true })
 
 async function save() {
@@ -78,7 +93,7 @@ async function save() {
     try {
         await $fetch(`/api/entries/${id.value}/values`, {
             method: 'PUT',
-            body: { localeCode: contentLocale.value, values: fieldValues.value },
+            body: { localeCode: contentLocale.value, values: fieldValues.value, relations: fieldRelations.value },
         })
         toast.add({ title: t('entries.saved'), color: 'success' })
     }

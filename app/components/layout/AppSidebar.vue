@@ -1,7 +1,7 @@
 <template>
   <aside class="sidebar" :class="{ 'sidebar--collapsed': uiStore.sidebarCollapsed }">
     <div class="sidebar__logo">
-      <span v-if="!uiStore.sidebarCollapsed" class="sidebar__logo-text">SnapCMS</span>
+      <span v-if="!uiStore.sidebarCollapsed" class="sidebar__logo-text">{{ $t('app.name') }}</span>
       <UIcon v-else name="i-lucide-layers" class="sidebar__logo-icon" />
     </div>
 

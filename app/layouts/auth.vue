@@ -2,7 +2,7 @@
   <div class="auth-layout">
     <div class="auth-layout__card">
       <div class="auth-layout__logo">
-        <span class="auth-layout__logo-text">SnapCMS</span>
+        <span class="auth-layout__logo-text">{{ $t('app.name') }}</span>
       </div>
       <slot />
     </div>

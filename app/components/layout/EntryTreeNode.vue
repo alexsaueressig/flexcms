@@ -1,6 +1,6 @@
 <template>
   <div class="tree-node">
-    <NuxtLink :to="localePath(`/entries/${entry.id}`)" class="tree-node__row" active-class="tree-node__row--active">
+    <NuxtLink :to="localePath(entry.blueprint ? `/entries/${entry.id}` : `/entries/${entry.id}/edit`)" class="tree-node__row" active-class="tree-node__row--active">
       <UButton v-if="entry._count && entry._count.children > 0"
         :icon="isExpanded ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'" variant="ghost" color="neutral"
         size="2xs" class="tree-node__chevron" @click.prevent="toggle" />
@@ -28,6 +28,7 @@ const props = defineProps<{
     id: string
     title: string
     slug: string
+    blueprint?: { id: string } | null
     _count?: { children: number }
   }
 }>()

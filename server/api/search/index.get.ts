@@ -33,6 +33,7 @@ export default defineEventHandler(async (event) => {
     take: limit,
     select: {
       id: true, title: true, slug: true,
+      blueprint: { select: { id: true } },
       parent: { select: { id: true, title: true, slug: true } },
     },
     orderBy: { updatedAt: 'desc' },

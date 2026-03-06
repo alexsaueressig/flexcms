@@ -32,6 +32,7 @@ export default defineEventHandler(async (event) => {
       select: {
         id: true, slug: true, title: true,
         order: true, createdAt: true, updatedAt: true, archivedAt: true, createdBy: true,
+        blueprint: { select: { id: true } },
         _count: { select: { children: { where: { isArchived: false } } } },
       },
     }),

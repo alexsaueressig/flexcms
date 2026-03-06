@@ -26,6 +26,22 @@ const selectedEntries = ref<any[]>([])
 const isMany = computed(() => props.field.type === 'RELATION_MANY')
 const canAddMore = computed(() => isMany.value || selectedEntries.value.length === 0)
 
+// Initialize from modelValue (array of IDs) — resolve entry titles
+watch(() => props.modelValue, async (val) => {
+  const ids = Array.isArray(val) ? val : []
+  if (!ids.length) { selectedEntries.value = []; return }
+  // Avoid overwriting if IDs match
+  const currentIds = selectedEntries.value.map(e => e.id)
+  if (ids.length === currentIds.length && ids.every((id, i) => id === currentIds[i])) return
+  // Fetch entry details for each ID
+  const entries = await Promise.all(
+    ids.map(id => $fetch(`/api/entries/${id}`).catch(() => null)),
+  )
+  selectedEntries.value = entries
+    .filter(Boolean)
+    .map((e: any) => ({ id: e.id, title: e.title }))
+}, { immediate: true })
+
 function selectEntry(e: any) {
   selectedEntries.value = isMany.value
     ? [...selectedEntries.value.filter(x => x.id !== e.id), e]

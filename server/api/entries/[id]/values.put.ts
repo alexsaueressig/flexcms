@@ -12,6 +12,10 @@ const bodySchema = z.object({
     valueJson: z.any().optional(),
     valueMedia: z.string().nullable().optional(),
   })),
+  relations: z.array(z.object({
+    blueprintFieldId: z.string(),
+    targetEntryIds: z.array(z.string()),
+  })).optional(),
 })
 
 export default defineEventHandler(async (event) => {
@@ -19,9 +23,9 @@ export default defineEventHandler(async (event) => {
   const entryId = getRouterParam(event, 'id')!
   assertCan(user, 'edit', entryId)
 
-  const { localeCode, values } = bodySchema.parse(await readBody(event))
+  const { localeCode, values, relations } = bodySchema.parse(await readBody(event))
 
-  // Upsert each value
+  // Upsert each field value
   await Promise.all(values.map(v =>
     db.fieldValue.upsert({
       where: {
@@ -33,6 +37,27 @@ export default defineEventHandler(async (event) => {
       update: v,
     }),
   ))
+
+  // Upsert entry relations
+  if (relations?.length) {
+    for (const rel of relations) {
+      // Delete existing relations for this field
+      await db.entryRelation.deleteMany({
+        where: { sourceEntryId: entryId, blueprintFieldId: rel.blueprintFieldId },
+      })
+      // Create new relations
+      if (rel.targetEntryIds.length) {
+        await db.entryRelation.createMany({
+          data: rel.targetEntryIds.map((targetEntryId, i) => ({
+            sourceEntryId: entryId,
+            targetEntryId,
+            blueprintFieldId: rel.blueprintFieldId,
+            order: i,
+          })),
+        })
+      }
+    }
+  }
 
   return { ok: true }
 })

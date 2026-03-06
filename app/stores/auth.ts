@@ -18,7 +18,8 @@ export const useAuthStore = defineStore('auth', () => {
   async function fetchMe() {
     try {
       pending.value = true
-      const data = await $fetch<AuthUser>('/api/auth/me')
+      const headers = import.meta.server ? useRequestHeaders(['cookie']) : undefined
+      const data = await $fetch<AuthUser>('/api/auth/me', { headers })
       user.value = data
     }
     catch {
