@@ -1,4 +1,10 @@
-# SnapCMS — Product Specification
+# CMS — Product Specification
+
+|                  |            |
+| ---------------- | ---------- |
+| **Version**      | 1.0.0      |
+| **Status**       | Draft      |
+| **Last Updated** | 2026-03-06 |
 
 > A headless, multilingual content management system with hierarchical content, dynamic schemas, role-based access, and rich media management.
 
@@ -6,7 +12,7 @@
 
 ## 1. Product Overview
 
-**SnapCMS** is a web-based CMS that lets teams manage structured, hierarchical content across multiple languages. Content editors create tree-structured entries (like pages, articles, or any nested content), define custom field schemas (blueprints) per section, and fill in localized field values. The system supports passwordless login, role-based permissions, media uploads, full-text search, and a public read-only API for delivering content to any frontend.
+**CMS** is a web-based CMS that lets teams manage structured, hierarchical content across multiple languages. Content editors create tree-structured entries (like pages, articles, or any nested content), define custom field schemas (blueprints) per section, and fill in localized field values. The system supports passwordless login, role-based permissions, media uploads, full-text search, and a public read-only API for delivering content to any frontend.
 
 ---
 
@@ -85,6 +91,22 @@ The URL routing uses a prefix strategy: `/en/entries/123`, `/br/entries/123`. De
 
 Seeded locales: **Brazilian Portuguese (br)** and **English (en)**.
 
+### 3.5 Content Lifecycle
+
+Every entry has a **publish status** that controls whether it is visible through the public API:
+
+| Status        | Visible in Admin | Visible in Public API   | Description                                                                           |
+| ------------- | ---------------- | ----------------------- | ------------------------------------------------------------------------------------- |
+| **Draft**     | Yes              | No                      | Default state on creation. Work-in-progress content.                                  |
+| **Published** | Yes              | Yes                     | Live content served to consumers.                                                     |
+| **Scheduled** | Yes              | No (until publish date) | Content with a future publish date. Automatically published when the date is reached. |
+
+- An entry's publish status is **per-locale** — content can be published in English while still in draft in Portuguese.
+- Publishing requires the **edit** permission on that entry.
+- Scheduled entries store a `publishAt` timestamp. A on-request check promotes them to **Published** once the time is reached.
+- Unpublishing moves an entry back to **Draft** without losing any content.
+- The admin UI shows a status badge on each entry (colored dot: grey for draft, green for published, blue for scheduled).
+
 ---
 
 ## 4. Field Types (17 total)
@@ -119,11 +141,11 @@ Each field type is registered in the database with an icon, label, description, 
 
 1. User enters email on the login page
 2. System generates a **6-digit OTP code**, hashes it (SHA-256), and stores it with 15-minute expiry
-3. OTP is emailed to the user (in development mode, the code is returned in the response instead)
+3. OTP is emailed to the user (in development mode, the code is returned in the response instead and shown in the console and in the interface)
 4. User enters the code on the verification page
 5. On success, a **session** is created:
    - Token: random 48-character string
-   - Stored in an HttpOnly cookie (`snapcms_session`)
+   - Stored in an HttpOnly cookie (`cms_session`)
    - 30-day duration (configurable)
    - IP address and user agent recorded for audit
 
@@ -163,10 +185,11 @@ The app has two layouts:
 
 **Authenticated layout (default):**
 
-- **Sidebar** (260px, collapsible to 56px icon-only):
+- **Sidebar** (collapsible to icon-only):
   - App logo/name at top
   - Navigation links: Entries, Archive, (Users and Roles for Super Admin)
   - Content tree below navigation: shows root entries in a recursive expandable tree with child counts, lazy-loaded on expand
+  - Clicking an entry in the tree navigates to its **detail/children page** if it has a blueprint (i.e., it can have children), or directly to the **edit page** if it has no blueprint (leaf entry)
   - "New entry" button at the top of the tree
 - **Header bar:**
   - Sidebar toggle button
@@ -180,20 +203,20 @@ The app has two layouts:
 
 ### 6.2 Pages
 
-| Page               | URL                | Access        | Purpose                                                                                                                  |
-| ------------------ | ------------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **Login**          | /auth/login        | Public        | Enter email to request OTP                                                                                               |
-| **Verify**         | /auth/verify       | Public        | Enter 6-digit code                                                                                                       |
-| **Entries** (Home) | /                  | Authenticated | Table of root entries with search, pagination (25/page), create/edit/delete modals                                       |
-| **Entry Detail**   | /entries/[id]      | Authenticated | Breadcrumb trail, "Edit fields" button, children table, blueprint definition modal                                       |
-| **Entry Editor**   | /entries/[id]/edit | Authenticated | Locale switcher, dynamic form with all blueprint fields, "Magic Populate" button (auto-fill with fake data), save button |
-| **Archive**        | /archive           | Authenticated | Archived entries table with restore action                                                                               |
-| **Users**          | /admin/users       | Super Admin   | User list with search, invite modal (name + email + roles), edit modal (name + status)                                   |
-| **Roles**          | /admin/roles       | Super Admin   | Role cards with permission grids (view/create/edit/archive checkboxes), create/delete roles                              |
+| Page               | URL                | Access        | Purpose                                                                                                                                                                                                                                          |
+| ------------------ | ------------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Login**          | /auth/login        | Public        | Enter email to request OTP                                                                                                                                                                                                                       |
+| **Verify**         | /auth/verify       | Public        | Enter 6-digit code                                                                                                                                                                                                                               |
+| **Entries** (Home) | /                  | Authenticated | Table of root entries with search, pagination (25/page), create/edit/delete modals                                                                                                                                                               |
+| **Entry Detail**   | /entries/[id]      | Authenticated | Breadcrumb trail, "Edit fields" button, children table, blueprint definition modal. **Only accessible for entries that have a blueprint** (i.e., entries that can have children). Entries without a blueprint redirect to the edit page instead. |
+| **Entry Editor**   | /entries/[id]/edit | Authenticated | Locale switcher, dynamic form with all blueprint fields, "Magic Populate" button (auto-fill with fake data), save button                                                                                                                         |
+| **Archive**        | /archive           | Authenticated | Archived entries table with restore action                                                                                                                                                                                                       |
+| **Users**          | /admin/users       | Super Admin   | User list with search, invite modal (name + email + roles), edit modal (name + status)                                                                                                                                                           |
+| **Roles**          | /admin/roles       | Super Admin   | Role cards with permission grids (view/create/edit/archive checkboxes), create/delete roles                                                                                                                                                      |
 
 ### 6.3 Page Transitions
 
-All page changes use **View Transition API** with a slide animation (translate ±16px + opacity fade, 0.22s ease).
+All page changes use **View Transition API** with a slide animation
 
 ---
 
@@ -207,16 +230,25 @@ All page changes use **View Transition API** with a slide animation (translate �
 4. If the parent has a blueprint, additional fields from that blueprint appear in the creation form
 5. Entry is created and appears in the tree
 
-### 7.2 Content Editing
+### 7.2 Navigation Behavior
 
-1. Navigate to an entry's detail page
-2. Click "Edit fields" to go to the editor
+When a user clicks on an entry (in the sidebar tree, a table row, or any link):
+
+- **Entry has a blueprint** → navigates to the **detail page** (children list + blueprint editor)
+- **Entry has no blueprint** → navigates directly to the **edit page** (field editor)
+
+This means leaf entries (those that are not meant to have children) skip the children listing entirely and go straight to content editing. The detail/children page is only useful for entries that serve as containers for other entries.
+
+### 7.3 Content Editing
+
+1. Navigate to an entry (or click a leaf entry which opens the editor directly)
+2. Click "Edit fields" to go to the editor (if on the detail page)
 3. Switch between locales using the locale pill buttons (each locale's content is independent)
 4. Fill in each field (the available fields come from the parent's blueprint)
 5. Optionally click "Magic Populate" to auto-fill all fields with realistic fake data (uses Faker)
 6. Click Save — field values are stored per locale
 
-### 7.3 Blueprint Definition
+### 7.4 Blueprint Definition
 
 1. Navigate to an entry's detail page
 2. Click "Define Blueprint" (or edit existing)
@@ -226,7 +258,7 @@ All page changes use **View Transition API** with a slide animation (translate �
 6. Drag to reorder fields
 7. Save — now all children of this entry will have these fields
 
-### 7.4 Search
+### 7.5 Search
 
 - Press Cmd+K (or Ctrl+K) anywhere in the app
 - Type a search query — results appear in real-time (300ms throttle)
@@ -234,7 +266,7 @@ All page changes use **View Transition API** with a slide animation (translate �
 - Click a result to navigate to it
 - Search covers entry titles, slugs, and field text values in the current locale
 
-### 7.5 Media Upload
+### 7.6 Media Upload
 
 1. In a media field (image/video/file), click the dropzone or drag a file onto it
 2. The frontend requests a signed upload URL from the server
@@ -242,14 +274,14 @@ All page changes use **View Transition API** with a slide animation (translate �
 4. Once complete, the file URL is stored as the field value
 5. Images show a preview; videos and files show download links
 
-### 7.6 Entry Archiving & Restoration
+### 7.7 Entry Archiving & Restoration
 
 - Deleting an entry soft-archives it (and recursively all its descendants)
 - Archived entries appear on the Archive page
 - From the Archive page, entries can be restored
-- Permanent deletion is mentioned in the UI but marked as "not implemented" (placeholder)
+- From the Archive page, entries can be permanently deleted (modal confirmation)
 
-### 7.7 Entry Relations
+### 7.8 Entry Relations
 
 - Relation fields (one or many) link entries to each other
 - A picker modal opens with a search bar to find target entries
@@ -268,7 +300,25 @@ The system exposes a **read-only public API** at `/api/v1/` that requires no aut
 | `GET /api/v1/entries/[id]/children?locale=en` | Paginated children list with field values               |
 | `GET /api/v1/search?q=...&locale=en`          | Search results across titles, slugs, and field values   |
 
-Only non-archived entries are returned. The API supports pagination with limit/offset.
+Only non-archived, **published** entries are returned. The API supports pagination with limit/offset.
+
+### 8.1 Rate Limiting
+
+The public API enforces rate limiting to prevent abuse:
+
+- **Default limit**: 1000 requests per minute per IP address
+- Exceeding the limit returns `429 Too Many Requests` with a `Retry-After` header
+- Rate limit settings are configurable via Site Settings
+
+### 8.2 CORS
+
+Cross-Origin Resource Sharing is configured for the public API:
+
+- **Allowed origins**: configurable list stored in Site Settings (defaults to `*` in development)
+- **Allowed methods**: `GET`, `OPTIONS`
+- **Allowed headers**: `Content-Type`, `Accept`, `Accept-Language`
+- **Max age**: 86400 seconds (24 hours) for preflight cache
+- CORS headers are only applied to `/api/v1/**` routes — internal API routes are not exposed cross-origin
 
 ---
 
@@ -356,7 +406,7 @@ A key-value store for global configuration:
 
 - Uses **SMTP** (configurable host, port, user, pass)
 - Currently sends only **OTP emails** with an HTML + plain text template
-- Branded as "SnapCMS" with the OTP code prominently displayed
+- Branded with the configured app name and the OTP code prominently displayed
 - In development mode, emails are skipped and the code is returned in the API response
 
 ---
@@ -388,16 +438,16 @@ A key-value store for global configuration:
 
 The app requires the following environment variables:
 
-| Variable                                                                                    | Purpose                              |
-| ------------------------------------------------------------------------------------------- | ------------------------------------ |
-| `DATABASE_URL`                                                                              | PostgreSQL connection string         |
-| `NUXT_SESSION_SECRET`                                                                       | Secret for session encryption        |
-| `NUXT_SMTP_HOST`, `_PORT`, `_USER`, `_PASS`, `_FROM`                                        | SMTP email configuration             |
-| `NUXT_FIREBASE_SERVICE_ACCOUNT`                                                             | Firebase Admin SDK JSON credentials  |
-| `NUXT_FIREBASE_STORAGE_BUCKET`                                                              | Firebase Cloud Storage bucket name   |
-| `NUXT_PUBLIC_FIREBASE_API_KEY`, `_AUTH_DOMAIN`, `_PROJECT_ID`, `_STORAGE_BUCKET`, `_APP_ID` | Firebase client-side config          |
-| `NUXT_PUBLIC_GOOGLE_PLACES_API_KEY`                                                         | Google Places API key for geo fields |
-| `NUXT_PUBLIC_APP_NAME`                                                                      | Display name (default: "SnapCMS")    |
+| Variable                                                                                                                                                                    | Purpose                              |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `DATABASE_URL`                                                                                                                                                              | PostgreSQL connection string         |
+| `NUXT_SESSION_SECRET`                                                                                                                                                       | Secret for session encryption        |
+| `NUXT_SMTP_HOST`, `NUXT_SMTP_PORT`, `NUXT_SMTP_USER`, `NUXT_SMTP_PASS`, `NUXT_SMTP_FROM`                                                                                    | SMTP email configuration             |
+| `NUXT_FIREBASE_SERVICE_ACCOUNT`                                                                                                                                             | Firebase Admin SDK JSON credentials  |
+| `NUXT_FIREBASE_STORAGE_BUCKET`                                                                                                                                              | Firebase Cloud Storage bucket name   |
+| `NUXT_PUBLIC_FIREBASE_API_KEY`, `NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN`, `NUXT_PUBLIC_FIREBASE_PROJECT_ID`, `NUXT_PUBLIC_FIREBASE_STORAGE_BUCKET`, `NUXT_PUBLIC_FIREBASE_APP_ID` | Firebase client-side config          |
+| `NUXT_PUBLIC_GOOGLE_PLACES_API_KEY`                                                                                                                                         | Google Places API key for geo fields |
+| `NUXT_PUBLIC_APP_NAME`                                                                                                                                                      | Display name (default: "FlexCMS")    |
 
 ---
 
