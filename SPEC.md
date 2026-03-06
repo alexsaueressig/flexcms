@@ -203,12 +203,14 @@ The app has two layouts:
 
 ### 6.2 Pages
 
+_All URLs below omit the locale prefix (e.g., `/en`, `/br`) for brevity._
+
 | Page               | URL                | Access        | Purpose                                                                                                                                                                                                                                          |
 | ------------------ | ------------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Login**          | /auth/login        | Public        | Enter email to request OTP                                                                                                                                                                                                                       |
 | **Verify**         | /auth/verify       | Public        | Enter 6-digit code                                                                                                                                                                                                                               |
 | **Entries** (Home) | /                  | Authenticated | Table of root entries with search, pagination (25/page), create/edit/delete modals                                                                                                                                                               |
-| **Entry Detail**   | /entries/[id]      | Authenticated | Breadcrumb trail, "Edit fields" button, children table, blueprint definition modal. **Only accessible for entries that have a blueprint** (i.e., entries that can have children). Entries without a blueprint redirect to the edit page instead. |
+| **Entry Detail**   | /entries/[id]      | Authenticated | Breadcrumb trail, "Edit fields" button, children table with filters and configurable pagination, blueprint definition modal. **Only accessible for entries that have a blueprint** (i.e., entries that can have children). Entries without a blueprint redirect to the edit page instead. |
 | **Entry Editor**   | /entries/[id]/edit | Authenticated | Locale switcher, dynamic form with all blueprint fields, "Magic Populate" button (auto-fill with fake data), save button                                                                                                                         |
 | **Archive**        | /archive           | Authenticated | Archived entries table with restore action                                                                                                                                                                                                       |
 | **Users**          | /admin/users       | Super Admin   | User list with search, invite modal (name + email + roles), edit modal (name + status)                                                                                                                                                           |
@@ -258,7 +260,31 @@ This means leaf entries (those that are not meant to have children) skip the chi
 6. Drag to reorder fields
 7. Save — now all children of this entry will have these fields
 
-### 7.5 Search
+### 7.5 Entry Listing Filters
+
+All entry tables (root listing, children listing, archive) support the following filters:
+
+| Filter              | Control            | Behavior                                                                                              |
+| ------------------- | ------------------ | ----------------------------------------------------------------------------------------------------- |
+| **Publish status**  | Multi-select chips | Filter by Draft, Published, or Scheduled (per current locale). All selected by default.               |
+| **Has blueprint**   | Toggle             | Show only entries that have a blueprint defined (container entries), or only leaf entries.             |
+| **Created date**    | Date range picker  | Filter entries created within a start/end date range.                                                 |
+| **Updated date**    | Date range picker  | Filter entries last updated within a start/end date range.                                            |
+
+- Filters are displayed in a collapsible bar above the table, collapsed by default.
+- Active filters show a count badge on the filter toggle button.
+- Filters combine with the search query (AND logic).
+- Filter state is **not** persisted — it resets on page navigation.
+
+### 7.6 Configurable Pagination
+
+Users can choose their preferred page size from a dropdown beside the pagination controls. Available options: **10, 25, 50, 100**. The default is **25**.
+
+- The chosen page size is saved as a **user preference** and applies globally across all entry tables.
+- The preference is stored via the existing UserPreference mechanism and synced on login.
+- Site Settings defines the **default** (25) and **maximum** (100) pagination limits, which bound the available options.
+
+### 7.7 Search
 
 - Press Cmd+K (or Ctrl+K) anywhere in the app
 - Type a search query — results appear in real-time (300ms throttle)
@@ -266,7 +292,7 @@ This means leaf entries (those that are not meant to have children) skip the chi
 - Click a result to navigate to it
 - Search covers entry titles, slugs, and field text values in the current locale
 
-### 7.6 Media Upload
+### 7.8 Media Upload
 
 1. In a media field (image/video/file), click the dropzone or drag a file onto it
 2. The frontend requests a signed upload URL from the server
@@ -274,14 +300,14 @@ This means leaf entries (those that are not meant to have children) skip the chi
 4. Once complete, the file URL is stored as the field value
 5. Images show a preview; videos and files show download links
 
-### 7.7 Entry Archiving & Restoration
+### 7.9 Entry Archiving & Restoration
 
 - Deleting an entry soft-archives it (and recursively all its descendants)
 - Archived entries appear on the Archive page
 - From the Archive page, entries can be restored
 - From the Archive page, entries can be permanently deleted (modal confirmation)
 
-### 7.8 Entry Relations
+### 7.10 Entry Relations
 
 - Relation fields (one or many) link entries to each other
 - A picker modal opens with a search bar to find target entries
@@ -349,7 +375,7 @@ Locale flags are rendered as emoji using Unicode regional indicator conversion f
 ## 10. User Interface Conventions
 
 - **Modals** for create/edit/delete actions (not separate pages)
-- **Tables** with search bars, paginated at 25 items per page
+- **Tables** with search bars and filter controls, paginated with a user-configurable page size (default 25; options: 10, 25, 50, 100)
 - **Breadcrumb trails** on entry detail pages showing the full parent path
 - **Toast notifications** for success/error feedback
 - **Color mode** support (light and dark themes)
@@ -386,7 +412,7 @@ Each entry can optionally have a **Blueprint** that defines the schema for its c
 - **Entry → FieldValue** — one-to-many; values per field per locale
 - **Entry → EntryRelation** — many-to-many (source/target) through relation fields
 - **Entry → MediaRecord** — one-to-many; uploaded files
-- **User → UserPreference** — one-to-many; UI state persistence (optionally scoped to an entry)
+- **User → UserPreference** — one-to-many; UI state persistence (optionally scoped to an entry). Includes pagination page-size preference.
 - **Locale → FieldValue** — one-to-many; each value belongs to a locale
 
 ### Site Settings
@@ -399,6 +425,8 @@ A key-value store for global configuration:
 - Max upload size (KB)
 - Supported image formats
 - Default/max pagination limits
+- Rate limit (requests/min per IP)
+- CORS allowed origins
 
 ---
 
@@ -455,9 +483,9 @@ The app requires the following environment variables:
 
 On first setup, the seed script creates:
 
-1. Two locales: Brazilian Portuguese (default) and English
+1. Two locales: English (default) and Brazilian Portuguese
 2. All 17 field type definitions with icons, descriptions, and JSON Schema configs
-3. Seven site settings with sensible defaults
+3. Nine site settings with sensible defaults
 4. Three system roles: Super Admin, Editor, Viewer (with appropriate permissions)
 5. One initial admin user (email/name from environment variables)
 
